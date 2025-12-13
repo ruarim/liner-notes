@@ -1,7 +1,7 @@
 {
-  "watch": ["src", "public"],
+  "watch": ["src", "ui"],
   "ext": "ts,tsx,js,json",
-  "ignore": ["dist", "public/dist"],
+  "ignore": ["dist", "ui/dist"],
   "delay": "1000ms",
   "exec": "npm run build && node dist/server.js"
 }

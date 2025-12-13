@@ -4,6 +4,7 @@ import axios from 'axios';
 import querystring from 'querystring';
 import { generateText } from 'ai';
 import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
+import path from 'path';
 
 const app = express();
 
@@ -11,7 +12,7 @@ const PORT = process.env.PORT ?? 3000;
 const CLIENT_ID = process.env.CLIENT_ID as string;
 const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 const REDIRECT_URI = process.env.REDIRECT_URI as string;
-const UI_PATH = 'client'
+const UI_PATH =  path.join(process.cwd(), 'dist', 'ui')
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
     console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");

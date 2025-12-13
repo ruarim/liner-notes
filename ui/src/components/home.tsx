@@ -1,4 +1,5 @@
-import type { TrackData } from "../lib/types";
+import type { TrackData } from "../../../src/types";
+import Insights from "./insights";
 import PlayerCard from "./player-card";
 
 export default function Home({ data }: { data: TrackData }) {
@@ -11,13 +12,7 @@ export default function Home({ data }: { data: TrackData }) {
               `}>
                 <div className="flex flex-col md:flex-row gap-10 items-start text-left">
                     {data && <PlayerCard data={data} />}
-                    {data?.analysis && (
-                        // {/* <Insights insights={data.analysis}/> */}
-                        <div className="w-full md:flex-1 bg-[#333] p-6 rounded-lg text-sm leading-relaxed text-[#e0e0e0] md:h-112.5 md:overflow-y-auto">
-                            {data.analysis}
-                            {/* <Insights insights={data.analysis}/> */}
-                        </div>
-                    )}
+                    {data?.analysis && <Insights insights={data.analysis}/>}
 
                 </div>
             </div>

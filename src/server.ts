@@ -2,9 +2,11 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 import querystring from 'querystring';
-import { generateText } from 'ai';
-import { google, GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
+import { generateText, Output, stepCountIs } from 'ai';
+import { z } from 'zod';
+import { google, } from '@ai-sdk/google';
 import path from 'path';
+import { AnalysisData, SpotifyNowPlayingResponse, SpotifyTokenResponse } from './types';
 
 const app = express();
 
@@ -12,7 +14,7 @@ const PORT = process.env.PORT ?? 3000;
 const CLIENT_ID = process.env.CLIENT_ID as string;
 const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 const REDIRECT_URI = process.env.REDIRECT_URI as string;
-const UI_PATH =  path.join(process.cwd(), 'dist', 'ui')
+const UI_PATH = path.join(process.cwd(), 'dist', 'ui')
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
     console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");
@@ -66,19 +68,12 @@ app.get('/callback', async (req: Request, res: Response) => {
     }
 });
 
-const getResearch = async () => {
-    const { text } = await generateText({
-        model: google("gemini-3-pro-preview"),
-        prompt: "What is love?",
-
-    });
-    return text
-}
 
 // --- CACHE STATE ---
 // We store the analysis here so we don't spam Gemini every 5 seconds
 let currentTrackId: string | null = null;
-let cachedAnalysis: string = "Waiting for analysis...";
+let cachedAnalysisStatus: string = "Waiting for analysis...";
+let cachedAnalysisData: AnalysisData | null = null;
 
 // 3. API Route: The frontend polls this
 app.get('/api/now-playing', async (req: Request, res: Response) => {
@@ -108,54 +103,39 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
         if (trackId !== currentTrackId) {
             console.log(`New track: ${trackName}. Fetching research...`);
             currentTrackId = trackId;
-            cachedAnalysis = "Researching this track...";
+            cachedAnalysisStatus = "Researching this track...";
 
             // We await here to ensure the user gets data on the first hit
             try {
                 const { text } = await generateText({
-                    model: google("gemini-2.5-flash"),
+                    model: google("gemini-3-pro-preview"),
+                    experimental_output: Output.object({
+                        schema: z.object({
+                            albumAnalysis: z.string().describe("Analysis of the album's release, critical reception, and production style."),
+                            personnelAndPlaces: z.string().describe("Details on the people (producers, musicians) and places (studios, cities) involved."),
+                            artistBiography: z.string().describe("Biography focusing on where the artist was in their career during this specific era."),
+                            culturalContext: z.string().describe("The musical scene, genre movements, or cultural climate of the time."),
+                            recommendations: z.array(z.string()).describe("Distinct, actionable recommendations (books, albums, or tracks), with reasoning."),
+                        })
+                    }),
                     tools: {
                         google_search: google.tools.googleSearch({}),
                     },
+                    stopWhen: stepCountIs(3),
                     prompt: `
                         You are an expert musicologist and historian. 
-                        Analyze the song "${trackName}" by "${artistName}" from the album "${albumName}"(${release_date}).
-                        
-                        Provide a structured research summary in exactly these three sections. 
-                        Do not use markdown bolding (**) for the body text, only for the headers.
+                        Analyze the song "${trackName}" by "${artistName}" from the album "${albumName}" (${release_date || 'unknown date'}).
 
-                        **The Album**
-                        Discuss the album's release, critical reception, production style, or significance in the artist's discography.
+                        Use the Google Search tool to ensure your factual details (dates, personnel, reception) are accurate.
 
-                        **The Personnel/Places**
-                        Explain the people and places involved in this musical artist.
-
-                        **The Artist**
-                        Provide a brief biography focusing on where the artist was in their career when this track was released.
-
-                        **The Context**
-                        Explain the specific musical scene, genre movements, or the cultural climate the artist was working in at the time.
-                        
-                        **Where to Look Next**
-                        Provide 3 specific recommendations for further research. These should be distinct and actionable, such as:
-                        - A seminal book or documentary about this artist or scene.
-                        - An essential album by a *different* artist that influenced or was influenced by this sound.
-                        - A deep-cut track that provides more context.
-
-                        Keep each section concise.
+                        Fill out the schema fields concisely (approx 40-50 words per section).
                     `,
-                    // providerOptions: {
-                    //     google: {
-                    //         thinkingConfig: {
-                    //             thinkingLevel: 'high'
-                    //         }
-                    //     } satisfies GoogleGenerativeAIProviderOptions
-                    // }
                 });
-                cachedAnalysis = text;
+                cachedAnalysisData = JSON.parse(text) as AnalysisData;
+                cachedAnalysisStatus = 'complete';
             } catch (aiError) {
                 console.error("AI Generation failed:", aiError);
-                cachedAnalysis = "Could not retrieve research data.";
+                cachedAnalysisStatus = "Could not retrieve research data.";
             }
         }
 
@@ -164,7 +144,10 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
             name: trackName,
             artist: artistName,
             image: data.item.album.images[0]?.url,
-            analysis: cachedAnalysis
+            analysis: {
+                analysisStatus: cachedAnalysisStatus,
+                analysisData: cachedAnalysisData
+            }
         });
 
 

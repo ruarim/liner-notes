@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import type { TrackData } from './lib/types';
+import type { TrackData } from '../../src/types';
 import SpotifyLogin from './components/spotify-login';
 import Loading from './components/loading';
 import Home from './components/home';

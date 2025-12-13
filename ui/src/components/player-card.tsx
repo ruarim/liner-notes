@@ -1,4 +1,4 @@
-import type { TrackData } from "../lib/types";
+import type { TrackData } from "../../../src/types";
 
 export default function PlayerCard({ data }: { data: TrackData }) {
     return (

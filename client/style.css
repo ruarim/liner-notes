@@ -1,0 +1,121 @@
+body {
+    font-family: sans-serif;
+    background: #191414;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background: #282828;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 450px; /* Made wider to fit text */
+    max-height: 90vh;
+    overflow-y: auto; /* Allow scrolling if text gets long */
+    width: 90%; 
+    max-width: 400px; /* Default for mobile/login */
+    transition: max-width 0.3s ease; /* Smooth resizing */
+}
+
+.hidden { display: none; }
+
+img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin: 10px 0 5px;
+    font-size: 1.5rem;
+}
+
+p {
+    color: #b3b3b3;
+    margin: 0;
+}
+
+.btn {
+    display: inline-block;
+    background: #1DB954;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #1ed760;
+}
+
+.hidden {
+    display: none;
+}
+
+#status {
+    font-size: 0.8rem;
+    margin-top: 10px;
+    color: #555;
+}
+
+#analysis-container {
+    background: #333; 
+    padding: 20px; 
+    border-radius: 8px; 
+    margin-top: 20px; 
+    text-align: left; 
+    font-size: 0.9rem; 
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+h3 {
+    font-size: 1.1rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    color: #1DB954; /* Green headers */
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+/* --- DESKTOP LAYOUT --- */
+@media (min-width: 800px) {
+    
+    /* Make the main box wider to fit side-by-side content */
+    .container:has(#player-section:not(.hidden)) {
+        max-width: 900px;
+    }
+
+    /* Flexbox layout for the content */
+    .player-layout {
+        display: flex;
+        gap: 40px; /* Space between image and text */
+        align-items: flex-start; /* Align to top */
+        text-align: left;
+    }
+
+    /* Left Column (Image & Titles) */
+    .track-info {
+        flex: 0 0 320px; /* Fixed width for the visual side */
+        text-align: center; /* Keep the image centered within its column */
+        position: sticky;
+        top: 0;
+    }
+
+    /* Right Column (Analysis) */
+    #analysis-container {
+        flex: 1; /* Take up all remaining space */
+        margin-top: 0; /* Remove top margin since it's now on the side */
+        height: 450px; /* Fixed height to match image area roughly */
+        overflow-y: auto; /* Scroll text if it gets too long */
+    }
+}

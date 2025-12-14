@@ -6,16 +6,15 @@ import Loading from './components/loading';
 import Home from './components/home';
 
 function App() {
-  const [data, setData] = useState<TrackData | null>(null);
+  const [data, setData] = useState<Array<TrackData> | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Poll Backend
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/now-playing');
-        const result = response.data;
+        const result = response.data as TrackData;
 
         if (result.error === 'Not logged in') {
           setIsLoggedIn(false);
@@ -24,7 +23,28 @@ function App() {
         }
 
         setIsLoggedIn(true);
-        setData(result);
+
+        setData((prev) => {
+          if (!prev || prev.length === 0) {
+            return [result];
+          }
+
+          const lastTrack = prev[prev.length - 1];
+          if (result.trackId !== lastTrack.trackId) {
+            return [...prev, result];
+          }
+
+          // B. Same Track, but maybe Analysis updated? -> Update last item
+          // (Optional, but good for avoiding "Loading..." getting stuck)
+          if (JSON.stringify(result.analysis) !== JSON.stringify(lastTrack.analysis)) {
+            const newHistory = [...prev];
+            newHistory[newHistory.length - 1] = result;
+            return newHistory;
+          }
+
+          return prev;
+        });
+
         setLoading(false);
 
       } catch (error) {
@@ -42,12 +62,9 @@ function App() {
   }, []);
 
   if (loading) return <Loading />
-
   if (!isLoggedIn) return <SpotifyLogin />
 
-  if(data) return <Home data={data}/>;
-
-  return <>Failed</>;
+  if (data) return <Home data={data} />
 }
 
 export default App;

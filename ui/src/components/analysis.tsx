@@ -1,16 +1,13 @@
 import type { AnalysisData } from '../../../src/types';
+import { cn } from '../lib/utils';
 
-type InsightsData = {
-    analysisStatus: string,
-    analysisData: AnalysisData
-}
-export default function Insights({ insights }: { insights: InsightsData }) {
+export default function Insights({ analysis }: { analysis?: AnalysisData }) {
     return (
-        <div className="w-full md:flex-1 bg-[#333] p-6 rounded-lg text-sm leading-relaxed text-[#e0e0e0] md:h-175 md:overflow-y-auto">
-            {insights.analysisData
-                ? <AnalysisView data={insights.analysisData}/>
-                : <>{insights.analysisStatus}</>
-            }
+        <div className={cn(
+            "w-full md:flex-1 bg-[#333] p-6 rounded-lg text-sm leading-relaxed text-[#e0e0e0] md:h-175 md:overflow-y-auto",
+            !analysis && 'animate-pulse'
+        )}>
+            {analysis && <AnalysisView data={analysis} />}
         </div>
     )
 }

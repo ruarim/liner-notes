@@ -76,7 +76,7 @@ let cachedAnalysisStatus: string = "Waiting for analysis...";
 let cachedAnalysisData: AnalysisData | null = null;
 
 // 3. API Route: The frontend polls this
-app.get('/api/now-playing', async (req: Request, res: Response) => {
+app.get('/api/now-playing', async (_: Request, res: Response) => {
     if (!TOKEN) return res.json({ error: 'Not logged in' });
 
     try {
@@ -144,10 +144,8 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
             name: trackName,
             artist: artistName,
             image: data.item.album.images[0]?.url,
-            analysis: {
-                analysisStatus: cachedAnalysisStatus,
-                analysisData: cachedAnalysisData
-            }
+            trackId,
+            analysis: cachedAnalysisData,
         });
 
 

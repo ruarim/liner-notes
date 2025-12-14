@@ -34,14 +34,12 @@ export interface SpotifyTokenResponse {
 }
 
 export interface TrackData {
+  trackId: string;
   is_playing: boolean;
   name?: string;
   artist?: string;
   image?: string;
-  analysis?: {
-    analysisStatus: string,
-    analysisData: AnalysisData
-  };
+  analysis?: AnalysisData;
   error?: string;
 }
 

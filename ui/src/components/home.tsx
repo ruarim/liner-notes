@@ -2,17 +2,16 @@ import { useMemo, useState } from "react";
 import type { TrackData } from "../../../src/types";
 import Insights from "./analysis";
 import PlayerCard from "./player-card";
+import History from "./history";
 
 export default function Home({ data }: { data: Array<TrackData> }) {
     const [index, setIndex] = useState(data.length-1);
-    const currentData = useMemo(() => data[index], [data, index]);
+    const selectedTrack = useMemo(() => data[index], [data, index]);
 
-    const seek = (diff: number) => {
+    const seek = (newIndex: number) => {
         const N = data.length-1
-        let newIndex = index + diff
         if (newIndex < 0) newIndex = 0
         if (newIndex > N) newIndex = N 
-        console.log(newIndex)
         setIndex(newIndex)
     }
 
@@ -24,8 +23,11 @@ export default function Home({ data }: { data: Array<TrackData> }) {
                 md:max-w-300
               `}>
                 <div className="flex flex-col md:flex-row gap-10 items-start text-left">
-                    <PlayerCard data={currentData} seek={seek}/>
-                    <Insights analysis={currentData.analysis} />
+                    <div className="w-full md:w-[320px]">
+                        <History history={data} currentIndex={index} seek={seek}/>
+                        <PlayerCard currentTrack={selectedTrack}/>
+                    </div>
+                    <Insights analysis={selectedTrack.analysis} />
                 </div>
             </div>
         </div>

@@ -4,9 +4,10 @@ import session from 'express-session';
 import axios from 'axios';
 import querystring from 'querystring';
 import path from 'path';
-import { SpotifyNowPlayingResponse, SpotifyTokenResponse, TrackData } from './types';
+import { SpotifyTokenResponse, TrackData } from './types';
 import { getTrackAnalysis } from './analysis';
 import { analysisCache } from './store';
+import * as Spotify from './spotify';
 
 declare module 'express-session' {
     interface SessionData {
@@ -28,6 +29,7 @@ if (!CLIENT_ID || !CLIENT_SECRET) {
     console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");
     process.exit(1);
 }
+
 app.use(express.static(UI_PATH));
 app.use(session({
     secret: process.env.SESSION_SECRET || 'music-expert-secret',
@@ -38,12 +40,11 @@ app.use(session({
 
 
 app.get('/login', (_: Request, res: Response) => {
-    const scope = 'user-read-currently-playing user-read-playback-state';
-    res.redirect('https://accounts.spotify.com/authorize?' +
+    res.redirect(Spotify.authorizeUrl +
         querystring.stringify({
             response_type: 'code',
             client_id: CLIENT_ID,
-            scope: scope,
+            scope: Spotify.scopes,
             redirect_uri: REDIRECT_URI,
         }));
 });
@@ -53,7 +54,7 @@ app.get('/callback', async (req: Request, res: Response) => {
 
     try {
         const response = await axios.post<SpotifyTokenResponse>(
-            'https://accounts.spotify.com/api/token',
+            Spotify.tokenUrl,
             querystring.stringify({
                 grant_type: 'authorization_code',
                 code: code,
@@ -86,16 +87,10 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
     }
 
     try {
-        const response = await axios.get<SpotifyNowPlayingResponse>(
-            'https://api.spotify.com/v1/me/player/currently-playing',
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        if (response.status === 204 || !response.data.item) {
+        const track = await Spotify.getTrackCurrentlyPlaying(accessToken)
+        if (!track) {
             return res.json({ is_playing: false });
         }
-
-        const track = response.data.item;
         const trackId = track.id;
         const artistNames = track.artists.map((a: any) => a.name).join(', ');
 
@@ -111,7 +106,7 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
         }
 
         res.json({
-            is_playing: response.data.is_playing,
+            is_playing: track !== null,
             name: track.name,
             artist: artistNames,
             image: track.album.images[0]?.url,

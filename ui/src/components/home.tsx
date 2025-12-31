@@ -4,12 +4,17 @@ import Insights from "./analysis";
 import PlayerCard from "./player-card";
 
 export default function Home({ data }: { data: Array<TrackData> }) {
-    const [index, _] = useState(data.length-1);
-    const currentData = useMemo(() => data[index], [data]);
+    const [index, setIndex] = useState(data.length-1);
+    const currentData = useMemo(() => data[index], [data, index]);
 
-    // add buttons to move between history
-    // const moveBack = () => setIndex(1);
-
+    const seek = (diff: number) => {
+        const N = data.length-1
+        let newIndex = index + diff
+        if (newIndex < 0) newIndex = 0
+        if (newIndex > N) newIndex = N 
+        console.log(newIndex)
+        setIndex(newIndex)
+    }
 
     return (
         <div className="h-screen w-screen bg-[#191414] text-white flex items-center justify-center p-4 overflow-hidden">
@@ -19,7 +24,7 @@ export default function Home({ data }: { data: Array<TrackData> }) {
                 md:max-w-300
               `}>
                 <div className="flex flex-col md:flex-row gap-10 items-start text-left">
-                    <PlayerCard data={currentData} />
+                    <PlayerCard data={currentData} seek={seek}/>
                     <Insights analysis={currentData.analysis} />
                 </div>
             </div>

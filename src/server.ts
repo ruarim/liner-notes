@@ -1,32 +1,43 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
+import session from 'express-session';
 import axios from 'axios';
 import querystring from 'querystring';
-import { generateText, Output, stepCountIs } from 'ai';
-import { z } from 'zod';
-import { google, } from '@ai-sdk/google';
 import path from 'path';
-import { AnalysisData, SpotifyNowPlayingResponse, SpotifyTokenResponse } from './types';
+import { SpotifyNowPlayingResponse, SpotifyTokenResponse, TrackData } from './types';
+import { getTrackAnalysis } from './analysis';
+import { analysisCache } from './store';
+
+declare module 'express-session' {
+    interface SessionData {
+        accessToken: string;
+        refreshToken: string;
+        expiresAt: number;
+    }
+}
 
 const app = express();
-
 const PORT = process.env.PORT ?? 3000;
 const CLIENT_ID = process.env.CLIENT_ID as string;
 const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 const REDIRECT_URI = process.env.REDIRECT_URI as string;
-const UI_PATH = path.join(process.cwd(), 'dist', 'ui')
+const UI_PATH = path.join(process.cwd(), 'dist', 'ui');
+
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
     console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");
     process.exit(1);
 }
-
-let TOKEN: string | null = null;
-
 app.use(express.static(UI_PATH));
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'music-expert-secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set true if using HTTPS and add SESSION_SECRET to .env
+}));
 
 
-app.get('/login', (req: Request, res: Response) => {
+app.get('/login', (_: Request, res: Response) => {
     const scope = 'user-read-currently-playing user-read-playback-state';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
@@ -56,105 +67,74 @@ app.get('/callback', async (req: Request, res: Response) => {
             }
         );
 
-        if (response.data.access_token) {
-            TOKEN = response.data.access_token;
-            res.redirect('/');
-        } else {
-            res.send('Failed to retrieve token');
-        }
+        req.session.accessToken = response.data.access_token;
+        req.session.refreshToken = response.data.refresh_token;
+        req.session.expiresAt = Date.now() + response.data.expires_in * 1000;
+
+        res.redirect('/');
     } catch (error) {
         console.error('Error during authentication', error);
-        res.send('Error during authentication');
+        res.status(500).send('Authentication Error');
     }
 });
 
+app.get('/api/now-playing', async (req: Request, res: Response) => {
+    const { accessToken } = req.session;
 
-// --- CACHE STATE ---
-// We store the analysis here so we don't spam Gemini every 5 seconds
-let currentTrackId: string | null = null;
-let cachedAnalysisStatus: string = "Waiting for analysis...";
-let cachedAnalysisData: AnalysisData | null = null;
-
-// 3. API Route: The frontend polls this
-app.get('/api/now-playing', async (_: Request, res: Response) => {
-    if (!TOKEN) return res.json({ error: 'Not logged in' });
+    if (!accessToken) {
+        return res.status(401).json({ error: 'Not logged in' });
+    }
 
     try {
-        const response = await axios.get<SpotifyNowPlayingResponse>('https://api.spotify.com/v1/me/player/currently-playing', {
-            headers: {
-                Authorization: `Bearer ${TOKEN}`
-            }
-        });
+        const response = await axios.get<SpotifyNowPlayingResponse>(
+            'https://api.spotify.com/v1/me/player/currently-playing',
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
 
-        // If nothing is playing, Spotify returns 204 (No Content)
-        if (response.status === 204 || response.status > 400) {
+        if (response.status === 204 || !response.data.item) {
             return res.json({ is_playing: false });
         }
 
-        const data = response.data;
-        if (!data.item) throw new Error('');
-        const trackId = data.item.id;
-        const trackName = data.item.name;
-        const artistName = data.item.artists.map((a: any) => a.name).join(', ');
-        const albumName = data.item.album.name;
-        const release_date = data.item.album.release_date;
+        const track = response.data.item;
+        const trackId = track.id;
+        const artistNames = track.artists.map((a: any) => a.name).join(', ');
 
-        // Check if we need to fetch new analysis
-        if (trackId !== currentTrackId) {
-            console.log(`New track: ${trackName}. Fetching research...`);
-            currentTrackId = trackId;
-            cachedAnalysisStatus = "Researching this track...";
-
-            // We await here to ensure the user gets data on the first hit
-            try {
-                const { text } = await generateText({
-                    model: google("gemini-3-pro-preview"),
-                    experimental_output: Output.object({
-                        schema: z.object({
-                            albumAnalysis: z.string().describe("Analysis of the album's release, critical reception, and production style."),
-                            personnelAndPlaces: z.string().describe("Details on the people (producers, musicians) and places (studios, cities) involved."),
-                            artistBiography: z.string().describe("Biography focusing on where the artist was in their career during this specific era."),
-                            culturalContext: z.string().describe("The musical scene, genre movements, or cultural climate of the time."),
-                            recommendations: z.array(z.string()).describe("Distinct, actionable recommendations (books, albums, or tracks), with reasoning."),
-                        })
-                    }),
-                    tools: {
-                        google_search: google.tools.googleSearch({}),
-                    },
-                    stopWhen: stepCountIs(3),
-                    prompt: `
-                        You are an expert musicologist and historian. 
-                        Analyze the song "${trackName}" by "${artistName}" from the album "${albumName}" (${release_date || 'unknown date'}).
-
-                        Use the Google Search tool to ensure your factual details (dates, personnel, reception) are accurate.
-
-                        Fill out the schema fields concisely (approx 40-50 words per section).
-                    `,
-                });
-                cachedAnalysisData = JSON.parse(text) as AnalysisData;
-                cachedAnalysisStatus = 'complete';
-            } catch (aiError) {
-                console.error("AI Generation failed:", aiError);
-                cachedAnalysisStatus = "Could not retrieve research data.";
-            }
+        const cached = analysisCache.get(trackId);
+        if (!cached) {
+            getTrackAnalysis(
+                track.name,
+                artistNames,
+                track.album.name,
+                track.album.release_date,
+                trackId
+            );
         }
 
         res.json({
-            is_playing: data.is_playing,
-            name: trackName,
-            artist: artistName,
-            image: data.item.album.images[0]?.url,
+            is_playing: response.data.is_playing,
+            name: track.name,
+            artist: artistNames,
+            image: track.album.images[0]?.url,
             trackId,
-            analysis: cachedAnalysisData,
-        });
-
+            analysis: cached?.data || undefined,
+            status: cached?.status || "Initializing research..."
+        } satisfies TrackData);
 
     } catch (error: any) {
-        console.error('Error fetching song:', error.message);
-        res.status(500).json({ error: 'Failed to fetch data' });
+        // If 401, the token likely expired
+        if (error.response?.status === 401) {
+            return res.status(401).json({ error: 'Token expired' });
+        }
+        res.status(500).json({ error: 'Failed to fetch' });
     }
 });
 
+app.get('/api/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+});
+
 app.listen(PORT, () => {
-    console.log(`TypeScript Server listening at http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });

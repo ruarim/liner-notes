@@ -41,6 +41,7 @@ export interface TrackData {
   image?: string;
   analysis?: AnalysisData;
   error?: string;
+  status: string;
 }
 
 export interface AnalysisData {

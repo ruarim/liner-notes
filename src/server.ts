@@ -6,7 +6,7 @@ import querystring from 'querystring';
 import path from 'path';
 import { SpotifyTokenResponse, TrackData } from './types';
 import { getTrackAnalysis } from './analysis';
-import { analysisCache } from './store';
+import { analysisCache, getHistory, updateHistory } from './store';
 import * as Spotify from './spotify';
 
 declare module 'express-session' {
@@ -79,40 +79,50 @@ app.get('/callback', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/api/history', async (req: Request, res: Response) => {
+    const { id } = req.session;
+
+    const history = getHistory(id)
+
+    res.json({ history })
+})
+
 app.get('/api/now-playing', async (req: Request, res: Response) => {
-    const { accessToken } = req.session;
+    const { accessToken, id } = req.session;
 
     if (!accessToken) {
         return res.status(401).json({ error: 'Not logged in' });
     }
 
     try {
-        const track = await Spotify.getTrackCurrentlyPlaying(accessToken)
+        const track = await Spotify.getCurrentlyPlaying(accessToken)
         if (!track) {
             return res.json({ is_playing: false });
         }
-        const trackId = track.id;
         const artistNames = track.artists.map((a: any) => a.name).join(', ');
 
-        const cached = analysisCache.get(trackId);
+        updateHistory(id, track.id)
+
+        const cached = analysisCache.get(track.id);
         if (!cached) {
+            // run the analysis in the background
             getTrackAnalysis(
                 track.name,
                 artistNames,
                 track.album.name,
                 track.album.release_date,
-                trackId
+                track.id
             );
         }
 
         res.json({
-            is_playing: track !== null,
-            name: track.name,
-            artist: artistNames,
-            image: track.album.images[0]?.url,
-            trackId,
-            analysis: cached?.data || undefined,
-            status: cached?.status || "Initializing research..."
+            is_playing: true,
+            name:       track.name,
+            artist:     artistNames,
+            image:      track.album.images[0]?.url,
+            trackId:    track.id,
+            analysis:   cached?.data   || undefined,
+            status:     cached?.status || "Initializing research..."
         } satisfies TrackData);
 
     } catch (error: any) {

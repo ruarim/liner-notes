@@ -1,9 +1,13 @@
 import type { TrackData } from "../../../src/types";
 import { cn } from "../lib/utils";
 
-export default function History({ history, currentIndex, seek }: { history: Array<TrackData>, currentIndex: number, seek: (newIndex: number) => void }) {
+export default function History(
+    { history, currentIndex, seek }: 
+    { history: Array<TrackData>, currentIndex: number, seek: (newIndex: number) => void }
+) {
+    console.log(history)
     return (
-        <div className="flex overflow-scroll gap-2 p-0.5 pb-2">
+        <div className="flex overflow-scroll gap-2 p-0.5 pb-3">
             {history.map((t, i) => (
                 <HistoryIcon
                     key={`history -${i}`}

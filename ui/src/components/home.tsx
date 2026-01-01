@@ -27,7 +27,7 @@ export default function Home({ data }: { data: Array<TrackData> }) {
                         <History history={data} currentIndex={index} seek={seek}/>
                         <PlayerCard currentTrack={selectedTrack}/>
                     </div>
-                    <Insights analysis={selectedTrack.analysis} />
+                    <Insights analysis={selectedTrack?.analysis} />
                 </div>
             </div>
         </div>

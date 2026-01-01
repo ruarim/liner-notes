@@ -8,6 +8,7 @@ export async function getTrackAnalysis(trackName: string, artistName: string, al
     if (analysisCache.has(trackId)) return;
 
     analysisCache.set(trackId, { status: "Researching...", data: null });
+    console.log(`Starting research for ${trackName} - ${albumName} - ${artistName}`)
 
     try {
         const { text } = await generateText({

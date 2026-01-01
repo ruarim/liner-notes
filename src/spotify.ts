@@ -1,7 +1,7 @@
 import axios from "axios";
 import { SpotifyNowPlayingResponse } from "./types";
 
-export const getTrackCurrentlyPlaying = async (accessToken: string) => {
+export const getCurrentlyPlaying = async (accessToken: string) => {
     const response = await axios.get<SpotifyNowPlayingResponse>(
         'https://api.spotify.com/v1/me/player/currently-playing',
         { headers: { Authorization: `Bearer ${accessToken}` } }

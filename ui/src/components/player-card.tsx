@@ -1,6 +1,6 @@
 import type { TrackData } from "../../../src/types";
 
-export default function PlayerCard({ currentTrack }: { currentTrack: TrackData }) {
+export default function PlayerCard({ currentTrack }: { currentTrack?: TrackData }) {
     return (
         <div className="shrink-0 text-center md:sticky md:top-0 space-y-2">
             <img

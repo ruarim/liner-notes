@@ -15,7 +15,7 @@ export default function Home({ data }: { data: Array<TrackData> }) {
         setIndex(newIndex)
     }
 
-    useEffect(() => { setIndex(data.length-1) }, [data])
+    useEffect(() => { setIndex(data.length-1) }, [data.length])
 
     return (
         <div className="h-screen w-screen bg-[#191414] text-white flex items-center justify-center p-4 overflow-hidden">

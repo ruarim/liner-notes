@@ -1,13 +1,21 @@
 import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
+import { Loader2 } from 'lucide-react'
 
 export default function Insights({ analysis }: { analysis?: AnalysisData }) {
     return (
         <div className={cn(
             "w-full md:flex-1 bg-[#333] p-6 rounded-lg text-sm leading-relaxed text-[#e0e0e0] md:h-175 md:overflow-y-auto",
-            !analysis && 'animate-pulse'
+            !analysis && 'flex items-center justify-center animate-pulse'
         )}>
-            {analysis && <AnalysisView data={analysis} />}
+            {analysis ? (
+                <AnalysisView data={analysis} />
+            ) : (
+                <div className='opacity-50 flex flex-col items-center gap-2'>
+                    <Loader2 size={100} className='animate-spin' />
+                    <>Researching Track...</>
+                </div>
+            )}
         </div>
     )
 }

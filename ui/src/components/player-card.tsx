@@ -4,15 +4,15 @@ export default function PlayerCard({ currentTrack }: { currentTrack?: TrackData 
     return (
         <div className="shrink-0 text-center md:sticky md:top-0 space-y-2">
             <img
-                src={currentTrack?.is_playing ? currentTrack.image : 'https://via.placeholder.com/300?text=Paused'}
+                src={currentTrack?.image ? currentTrack.image : 'https://via.placeholder.com/300?text=Paused'}
                 alt="Album Art"
                 className="w-full rounded-xl shadow-lg mb-5"
             />
             <h2 className="text-2xl font-bold mb-1">
-                {currentTrack?.is_playing ? currentTrack.name : 'Nothing playing'}
+                {currentTrack?.name ? currentTrack.name : 'Nothing playing'}
             </h2>
             <p className="text-[#b3b3b3]">
-                {currentTrack?.is_playing ? currentTrack.artist : 'Open Spotify and play a song'}
+                {currentTrack?.artist ? currentTrack.artist : 'Open Spotify and play a song'}
             </p>
         </div>
     )

@@ -1,15 +1,12 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output, stepCountIs } from "ai";
 import { z } from 'zod';
-import { AnalysisData } from "./types";
-import { analysisCache } from "./store";
+import { AnalysisData, TrackData } from "./types";
+import * as Store from "./store";
+import * as Events from "./events";
 
-export async function getTrackAnalysis(trackName: string, artistName: string, albumName: string, releaseDate: string, trackId: string) {
-    if (analysisCache.has(trackId)) return;
-
-    analysisCache.set(trackId, { status: "Researching...", data: null });
-    console.log(`Starting research for ${trackName} - ${albumName} - ${artistName}`)
-
+export async function generateContent(track: TrackData) {
+    console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
     try {
         const { text } = await generateText({
             model: google("gemini-3-pro-preview"),
@@ -28,20 +25,21 @@ export async function getTrackAnalysis(trackName: string, artistName: string, al
             stopWhen: stepCountIs(3),
             prompt: `
                         You are an expert musicologist and historian. 
-                        Analyze the song "${trackName}" by "${artistName}" from the album "${albumName}" (${releaseDate || 'unknown date'}).
+                        Analyze the song "${track.name}" by "${track.artist}" from the album "${track.album}" (${track.releaseDate || 'unknown date'}).
 
                         Use the Google Search tool to ensure your factual details (dates, personnel, reception) are accurate.
 
-                        Fill out the schema fields concisely (approx 40-50 words per section).
+                        Fill out the schema fields concisely. 
+                        Focus on novel information which would be interesting to someone who already knows a lot about music.
                     `,
         });
-
-        analysisCache.set(trackId, {
-            status: 'complete',
-            data: JSON.parse(text) as AnalysisData
-        });
+        const analysis = JSON.parse(text) as AnalysisData
+        const updatedTrack = { ...track, analysis }
+        Store.updateCache(track.trackId, updatedTrack)
+        Events.analysis.emit(Events.analysisDone, updatedTrack);
+        console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)   
     } catch (error) {
-        console.error(`AI error for ${trackId}:`, error);
-        analysisCache.set(trackId, { status: "Error retrieving research.", data: null });
+        console.error(`AI error for ${track.trackId}:`, error);
+        Store.updateCache(track.trackId, { ...track, error: "Error retrieving research." })
     }
 }

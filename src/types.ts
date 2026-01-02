@@ -22,7 +22,7 @@ export interface SpotifyTrack {
 
 export interface SpotifyNowPlayingResponse {
     is_playing: boolean;
-    item: SpotifyTrack | null; // Item is null if playing a podcast or local file sometimes
+    item: SpotifyTrack | null;
     progress_ms: number;
 }
 
@@ -35,13 +35,13 @@ export interface SpotifyTokenResponse {
 
 export interface TrackData {
   trackId: string;
-  is_playing: boolean;
-  name?: string;
-  artist?: string;
-  image?: string;
+  name: string;
+  artist: string;
+  album: string;
+  releaseDate: string;
+  image: string;
   analysis?: AnalysisData;
   error?: string;
-  status: string;
 }
 
 export interface AnalysisData {

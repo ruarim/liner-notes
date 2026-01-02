@@ -5,9 +5,9 @@ export default function History(
     { history, currentIndex, seek }: 
     { history: Array<TrackData>, currentIndex: number, seek: (newIndex: number) => void }
 ) {
-    console.log(history)
+    if (history.length === 0) return <></> 
     return (
-        <div className="flex overflow-scroll gap-2 p-0.5 pb-3">
+        <div className="flex overflow-scroll [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden gap-2 p-0.5 pb-3">
             {history.map((t, i) => (
                 <HistoryIcon
                     key={`history -${i}`}

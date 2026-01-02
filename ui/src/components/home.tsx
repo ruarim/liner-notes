@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TrackData } from "../../../src/types";
 import Insights from "./analysis";
 import PlayerCard from "./player-card";
@@ -14,6 +14,8 @@ export default function Home({ data }: { data: Array<TrackData> }) {
         if (newIndex > N) newIndex = N 
         setIndex(newIndex)
     }
+
+    useEffect(() => { setIndex(data.length-1) }, [data])
 
     return (
         <div className="h-screen w-screen bg-[#191414] text-white flex items-center justify-center p-4 overflow-hidden">

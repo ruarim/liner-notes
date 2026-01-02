@@ -19,52 +19,29 @@ function App() {
 
       if (result.error === 'Not logged in' || response.status === 401) {
         setIsLoggedIn(false);
-        setLoading(false);
         return;
       }
 
       setHistory(result.history)
-      setLoading(false);
-
+      return result.history
     } catch (error) {
       setLoading(false);
     }
   }
   const pollCurrentlyPlaying = async () => {
     try {
-      // change this to ]
-      // polling on client, then
-      // if new track run analysis
-      // .post('api/analse', { track }) 
-      
       const response = await axios.get('/api/now-playing');
-      const result = response.data
+      const track = response.data as TrackData | null 
       setIsLoggedIn(true);
-
-      // 2. Handle "Not Playing" state
-      if (!result.is_playing || !result.trackId) {
-        return;
-      }
+      if(track === null) return
       setHistory((prev) => {
         if (prev.length === 0) {
-          return [result];
+          return [track];
         }
-
         const lastTrack = prev[prev.length - 1];
-
-        // Scenario A: It's a brand new song
-        if (result.trackId !== lastTrack.trackId) {
-          return [...prev, result];
+        if (track.trackId !== lastTrack.trackId) {
+          return [...prev, track];
         }
-
-        // Scenario B: Same song, but check if analysis/status updated
-        // We update the last item if the status changed (e.g., from "Researching..." to "complete")
-        if (result.status !== lastTrack.status || JSON.stringify(result.analysis) !== JSON.stringify(lastTrack.analysis)) {
-          const updatedHistory = [...prev];
-          updatedHistory[updatedHistory.length - 1] = result;
-          return updatedHistory;
-        }
-
         return prev;
       });
     } catch (error) {
@@ -77,13 +54,37 @@ function App() {
   };
 
   useEffect(() => {
-    fetchHistory()
-    pollCurrentlyPlaying();
-    pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
-
+    const fetchData = async () => {
+      await fetchHistory()
+      pollCurrentlyPlaying()
+      pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
+      setLoading(false);
+    }
+    fetchData();
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if(!isLoggedIn) return
+    const eventSource = new EventSource('/api/events');
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data) as TrackData;
+      setHistory(prev =>
+        prev.map(p => p.trackId == data.trackId
+          ? data
+          : p
+        )
+      )
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("SSE Error:", error);
+    };
+
+    return () => { eventSource.close() };
   }, [isLoggedIn]);
 
   if (loading) return <Loading />;

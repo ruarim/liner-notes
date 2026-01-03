@@ -10,6 +10,7 @@ import * as Store from './store';
 import * as Spotify from './spotify';
 import * as Analysis from './analysis';
 import * as Events from "./events";
+import redisClient, { connectRedis } from './redis';
 
 declare module 'express-session' {
     interface SessionData {
@@ -90,10 +91,10 @@ app.get('/callback', async (req: Request, res: Response) => {
     }
 });
 
-app.get('/api/history', (req: Request, res: Response) => {
+app.get('/api/history', async (req: Request, res: Response) => {
     const { spotifyId } = req.session;
     if (!spotifyId) return res.status(401).json({ error: 'Unauthorized' });
-    const history = Store.getTrackHistory(spotifyId);
+    const history = await Store.getTrackHistory(spotifyId);
     res.json({ history });
 });
 
@@ -112,16 +113,17 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
             trackId: track.id,
             album: track.album.name,
             releaseDate: track.album.release_date,
+            loading: true,
         }
-        Store.pushHistory(spotifyId, track.id);
-        let cached = Store.getCacheTrack(track.id);
-        if (cached) { 
+        await Store.pushHistory(spotifyId, track.id);
+        let cached = await Store.getCacheTrack(track.id);
+        if (cached) {
             res.json(cached);
             return;
         }
-        Store.updateCache(track.id, trackDetails);
+        await Store.updateCache(track.id, trackDetails);
         Analysis.generateContent(trackDetails);
-        res.json(trackDetails);        
+        res.json(trackDetails);
     } catch (error: any) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -130,8 +132,8 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
 app.get('/api/events', (req, res) => {
     const { spotifyId } = req.session;
 
-    if(!spotifyId) {
-        res.status(500).json({ error: 'spotifyId not found in cookies'})
+    if (!spotifyId) {
+        res.status(500).json({ error: 'spotifyId not found in cookies' })
         return
     }
 
@@ -140,8 +142,8 @@ app.get('/api/events', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const listener = (data: TrackData) => {
-        const userHistory = Store.getTrackHistory(spotifyId);
+    const listener = async(data: TrackData) => {
+        const userHistory = await Store.getTrackHistory(spotifyId);
         const isRelevant = userHistory.some(t => t.trackId === data.trackId);
         if (isRelevant) {
             res.write(`data: ${JSON.stringify(data)}\n\n`);
@@ -162,6 +164,14 @@ app.get('/api/logout', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+const startServer = async () => {
+    await connectRedis();
+    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+}
+
+startServer();
+
+process.on('SIGINT', async () => {
+    await redisClient.quit();
+    process.exit(0);
 });

@@ -34,20 +34,21 @@ export interface SpotifyTokenResponse {
 }
 
 export interface TrackData {
-  trackId: string;
-  name: string;
-  artist: string;
-  album: string;
-  releaseDate: string;
-  image: string;
-  analysis?: AnalysisData;
-  error?: string;
+    trackId: string;
+    name: string;
+    artist: string;
+    album: string;
+    releaseDate: string;
+    image: string;
+    analysis?: AnalysisData;
+    error?: string;
+    loading: boolean;
 }
 
 export interface AnalysisData {
-  albumAnalysis: string;
-  personnelAndPlaces: string;
-  artistBiography: string;
-  culturalContext: string;
-  recommendations: string[];
+    albumAnalysis: string;
+    personnelAndPlaces: string;
+    artistBiography: string;
+    culturalContext: string;
+    recommendations: string[];
 }

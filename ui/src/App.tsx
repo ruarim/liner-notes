@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import type { TrackData } from '../../src/types';
 import SpotifyLogin from './components/spotify-login';
-import Loading from './components/loading';
 import Home from './components/home';
 
 function App() {
   const [history, setHistory] = useState<TrackData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -25,7 +23,6 @@ function App() {
       setHistory(result.history)
       return result.history
     } catch (error) {
-      setLoading(false);
     }
   }
   const pollCurrentlyPlaying = async () => {
@@ -58,7 +55,6 @@ function App() {
       await fetchHistory()
       pollCurrentlyPlaying()
       pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
-      setLoading(false);
     }
     fetchData();
     return () => {
@@ -87,7 +83,6 @@ function App() {
     return () => { eventSource.close() };
   }, [isLoggedIn]);
 
-  if (loading) return <Loading />;
   if (!isLoggedIn) return <SpotifyLogin />;
 
   return <Home data={history} />;

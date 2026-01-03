@@ -6,8 +6,8 @@ import History from "./history";
 
 export default function Home({ data }: { data: Array<TrackData> }) {
     const [index, setIndex] = useState(data.length-1);
-    const selectedTrack = useMemo(() => data[index], [data, index]);
-
+    const selectedTrack = useMemo(() => data.at(index), [data, index]);
+    
     const seek = (newIndex: number) => {
         const N = data.length-1
         if (newIndex < 0) newIndex = 0
@@ -29,7 +29,7 @@ export default function Home({ data }: { data: Array<TrackData> }) {
                         <History history={data} currentIndex={index} seek={seek}/>
                         <PlayerCard currentTrack={selectedTrack}/>
                     </div>
-                    <Insights analysis={selectedTrack?.analysis} />
+                    <Insights analysis={selectedTrack?.analysis} loading={selectedTrack?.loading} />
                 </div>
             </div>
         </div>

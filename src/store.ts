@@ -1,39 +1,38 @@
+import redisClient from "./redis";
 import { TrackData } from "./types";
 
-// add timestamps
+const TRACK_KEY_PREFIX = "track:";
+const HISTORY_KEY_PREFIX = "history:";
 
-// trackId => trackData
-export const trackCache = new Map<string, TrackData>();
-// sessionId => Array of trackIds
-export const userTrackHistory = new Map<string, Array<string>>();
+export const updateCache = async (trackId: string, trackData: TrackData) => {
+    await redisClient.set(`${TRACK_KEY_PREFIX}${trackId}`, JSON.stringify(trackData));
+};
 
-const MAX_HISTORY_SIZE = 50;
+export const getCacheTrack = async (trackId: string): Promise<TrackData | null> => {
+    const data = await redisClient.get(`${TRACK_KEY_PREFIX}${trackId}`);
+    return data ? JSON.parse(data) : null;
+};
 
-export const updateCache = (trackId: string, trackData: TrackData) => {
-    trackCache.set(trackId, trackData)
-}
-export const getCacheTrack = (trackId: string) => trackCache.get(trackId);
-export const pushHistory = (userId: string, trackId: string) => {
-    const history = userTrackHistory.get(userId)
-    if (!history) {
-        userTrackHistory.set(userId, [trackId]);
-        return;
-    }
-    const lastTrackId = history[history.length - 1];
+export const pushHistory = async (userId: string, trackId: string) => {
+    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+    const lastTrackId = await redisClient.lIndex(key, -1);
+    
     if (lastTrackId === trackId) return;
 
-    history.push(trackId);
-    
-    if (history.length > MAX_HISTORY_SIZE) {
-        history.shift();
-    }
-}
+    await redisClient.rPush(key, trackId);
+};
 
-export const getTrackHistory = (userId: string) => {
-    const trackIds = userTrackHistory.get(userId) ?? [];
-    return trackIds
-        .flatMap(id => {
-            const track = trackCache.get(id);;
-            return track ? [track] : [];
-        })
+export const getTrackHistory = async (userId: string, count = 50): Promise<TrackData[]> => {
+    const key = `${HISTORY_KEY_PREFIX}${userId}`;
+    
+    const trackIds = await redisClient.lRange(key, 0, count);
+    
+    if (trackIds.length === 0) return [];
+
+    const trackKeys = trackIds.map(id => `${TRACK_KEY_PREFIX}${id}`);
+    const cachedTracks = await redisClient.mGet(trackKeys);
+
+    return cachedTracks
+        .filter((data): data is string => data !== null)
+        .map(data => JSON.parse(data));
 };

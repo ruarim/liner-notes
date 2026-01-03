@@ -34,12 +34,16 @@ export async function generateContent(track: TrackData) {
                     `,
         });
         const analysis = JSON.parse(text) as AnalysisData
-        const updatedTrack = { ...track, analysis }
+        const updatedTrack: TrackData = { 
+            ...track,
+            loading: false,
+            analysis: { ...analysis }
+        }
         Store.updateCache(track.trackId, updatedTrack)
         Events.analysis.emit(Events.analysisDone, updatedTrack);
         console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)   
     } catch (error) {
         console.error(`AI error for ${track.trackId}:`, error);
-        Store.updateCache(track.trackId, { ...track, error: "Error retrieving research." })
+        Store.updateCache(track.trackId, { ...track, error: "Error retrieving research.", loading: false })
     }
 }

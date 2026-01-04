@@ -53,7 +53,7 @@ app.get('/login', (_: Request, res: Response) => {
         scope: Spotify.scopes,
         redirect_uri: REDIRECT_URI,
     });
-    res.redirect(`${Spotify.authorizeUrl}?${params.toString()}`);
+    res.redirect(`${Spotify.authorizeUrl}${params.toString()}`);
 });
 
 app.get('/callback', async (req: Request, res: Response) => {

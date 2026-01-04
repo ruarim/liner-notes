@@ -47,26 +47,27 @@ app.use(session({
 
 
 app.get('/login', (_: Request, res: Response) => {
-    res.redirect(Spotify.authorizeUrl +
-        querystring.stringify({
-            response_type: 'code',
-            client_id: CLIENT_ID,
-            scope: Spotify.scopes,
-            redirect_uri: REDIRECT_URI,
-        }));
+    const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: CLIENT_ID,
+        scope: Spotify.scopes,
+        redirect_uri: REDIRECT_URI,
+    });
+    res.redirect(`${Spotify.authorizeUrl}?${params.toString()}`);
 });
 
 app.get('/callback', async (req: Request, res: Response) => {
     const code = req.query.code as string || null;
 
     try {
+        const params = new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code as string,
+            redirect_uri: REDIRECT_URI
+        });
         const response = await axios.post<SpotifyTokenResponse>(
             Spotify.tokenUrl,
-            querystring.stringify({
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: REDIRECT_URI
-            }),
+            params,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -142,7 +143,7 @@ app.get('/api/events', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const listener = async(data: TrackData) => {
+    const listener = async (data: TrackData) => {
         const userHistory = await Store.getTrackHistory(spotifyId);
         const isRelevant = userHistory.some(t => t.trackId === data.trackId);
         if (isRelevant) {

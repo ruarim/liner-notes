@@ -16,7 +16,7 @@ export async function generateContent(track: TrackData) {
                     personnelAndPlaces: z.string().describe("Details on the people (producers, musicians) and places (studios, cities) involved."),
                     artistBiography: z.string().describe("Biography focusing on where the artist was in their career during this specific era."),
                     culturalContext: z.string().describe("The musical scene, genre movements, or cultural climate of the time."),
-                    recommendations: z.array(z.string()).describe("Distinct, actionable recommendations (books, albums, or tracks), with reasoning."),
+                    recommendations: z.array(z.string()).describe("Distinct, actionable recommendations (books, albums, tracks etc), with reasoning."),
                 })
             }),
             tools: {
@@ -31,6 +31,8 @@ export async function generateContent(track: TrackData) {
 
                         Fill out the schema fields concisely. 
                         Focus on novel information which would be interesting to someone who already knows a lot about music.
+
+                        Ensure a none conversational style, the output will be shown directly to the user.
                     `,
         });
         const analysis = JSON.parse(text) as AnalysisData

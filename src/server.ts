@@ -1,9 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
-import session from 'express-session';
 import axios from 'axios';
-import querystring from 'querystring';
-import path from 'path';
 
 import { SpotifyTokenResponse, TrackData } from './types';
 import * as Store from './store';
@@ -11,40 +8,22 @@ import * as Spotify from './spotify';
 import * as Analysis from './analysis';
 import * as Events from "./events";
 import redisClient, { connectRedis } from './redis';
+import jwt from 'jsonwebtoken';
+import { CLIENT_ID, CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH } from './consts';
+import cookieParser from 'cookie-parser';
+import { AuthenticatedRequest, authenticateJWT } from './middleware';
 
-declare module 'express-session' {
-    interface SessionData {
-        accessToken: string;
-        refreshToken: string;
-        expiresAt: number;
-        spotifyId: string;
-    }
-}
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
-const CLIENT_ID = process.env.CLIENT_ID as string;
-const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
-const REDIRECT_URI = process.env.REDIRECT_URI as string;
-const UI_PATH = path.join(process.cwd(), 'dist', 'ui');
 
-
-if (!CLIENT_ID || !CLIENT_SECRET) {
+if (!CLIENT_ID || !CLIENT_SECRET || !JWT_SECRET) {
     console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");
     process.exit(1);
 }
 
+app.set('trust proxy', 1); // trust the first hop (the load balancer)
+app.use(cookieParser());
 app.use(express.static(UI_PATH));
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'music-expert-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-    }
-}));
-
 
 app.get('/login', (_: Request, res: Response) => {
     const params = new URLSearchParams({
@@ -80,10 +59,21 @@ app.get('/callback', async (req: Request, res: Response) => {
             headers: { Authorization: `Bearer ${response.data.access_token}` }
         });
 
-        req.session.accessToken = response.data.access_token;
-        req.session.refreshToken = response.data.refresh_token;
-        req.session.expiresAt = Date.now() + response.data.expires_in * 1000;
-        req.session.spotifyId = userProfile.data.id;
+        const sessionData = {
+            accessToken: response.data.access_token,
+            refreshToken: response.data.refresh_token,
+            expiresAt: Date.now() + response.data.expires_in * 1000,
+            spotifyId: userProfile.data.id
+        };
+        
+        const token = jwt.sign(sessionData, JWT_SECRET, { expiresIn: '7d' });
+
+        res.cookie(cookieName, token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         res.redirect('/');
     } catch (error) {
@@ -92,15 +82,17 @@ app.get('/callback', async (req: Request, res: Response) => {
     }
 });
 
-app.get('/api/history', async (req: Request, res: Response) => {
-    const { spotifyId } = req.session;
+app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    const spotifyId = req.user?.spotifyId;
     if (!spotifyId) return res.status(401).json({ error: 'Unauthorized' });
     const history = await Store.getTrackHistory(spotifyId);
     res.json({ history });
 });
 
-app.get('/api/now-playing', async (req: Request, res: Response) => {
-    const { accessToken, spotifyId } = req.session;
+app.get('/api/now-playing', authenticateJWT,  async (req: AuthenticatedRequest, res: Response) => {
+    const accessToken = req.user?.accessToken;
+    const spotifyId = req.user?.spotifyId;
+    
     if (!accessToken || !spotifyId) {
         return res.status(401).json({ error: 'Not logged in' });
     }
@@ -130,9 +122,8 @@ app.get('/api/now-playing', async (req: Request, res: Response) => {
     }
 })
 
-app.get('/api/events', (req, res) => {
-    const { spotifyId } = req.session;
-
+app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
+    const spotifyId = req.user?.spotifyId;
     if (!spotifyId) {
         res.status(500).json({ error: 'spotifyId not found in cookies' })
         return
@@ -156,12 +147,6 @@ app.get('/api/events', (req, res) => {
     req.on('close', () => {
         Events.analysis.off(Events.analysisDone, listener);
         res.end();
-    });
-});
-
-app.get('/api/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
     });
 });
 

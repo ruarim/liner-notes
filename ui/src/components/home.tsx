@@ -4,18 +4,18 @@ import Insights from "./analysis";
 import PlayerCard from "./player-card";
 import History from "./history";
 
-export default function Home({ data }: { data: Array<TrackData> }) {
-    const [index, setIndex] = useState(data.length-1);
+export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<TrackData>, isAnalyzing: boolean, setAnalyzing: (isAnalyzing: boolean) => void }) {
+    const [index, setIndex] = useState(data.length - 1);
     const selectedTrack = useMemo(() => data.at(index), [data, index]);
-    
+
     const seek = (newIndex: number) => {
-        const N = data.length-1
+        const N = data.length - 1
         if (newIndex < 0) newIndex = 0
-        if (newIndex > N) newIndex = N 
+        if (newIndex > N) newIndex = N
         setIndex(newIndex)
     }
 
-    useEffect(() => { setIndex(data.length-1) }, [data.length])
+    useEffect(() => { setIndex(data.length - 1) }, [data.length])
 
     return (
         <div className="h-screen w-screen bg-[#191414] text-white flex items-center justify-center p-4 overflow-hidden">
@@ -26,8 +26,20 @@ export default function Home({ data }: { data: Array<TrackData> }) {
               `}>
                 <div className="flex flex-col md:flex-row gap-10 items-start text-left">
                     <div className="w-full md:w-[320px]">
-                        <History history={data} currentIndex={index} seek={seek}/>
-                        <PlayerCard currentTrack={selectedTrack}/>
+                        <History history={data} currentIndex={index} seek={seek} />
+                        <PlayerCard currentTrack={selectedTrack} />
+                        <button
+                            onClick={() => setAnalyzing(!isAnalyzing)}
+                            className={`
+                                w-full mt-4 py-2 px-4 rounded-full font-bold transition-all duration-200
+                                ${isAnalyzing
+                                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                                    : 'bg-green-500 hover:bg-green-600 text-white'
+                                }
+                            `}
+                        >
+                            {isAnalyzing ? 'Stop Analysis' : 'Start Analysis'}
+                        </button>
                     </div>
                     <Insights analysis={selectedTrack?.analysis} loading={selectedTrack?.loading} />
                 </div>

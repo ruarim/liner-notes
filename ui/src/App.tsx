@@ -7,6 +7,7 @@ import Home from './components/home';
 function App() {
   const [history, setHistory] = useState<TrackData[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(true);
 
   const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -28,7 +29,7 @@ function App() {
   const pollCurrentlyPlaying = async () => {
     try {
       const response = await axios.get('/api/now-playing');
-      const track = response.data as TrackData | null 
+      const track = response.data as TrackData | null
       setIsLoggedIn(true);
       if(track === null) return
       setHistory((prev) => {
@@ -53,6 +54,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       await fetchHistory()
+      if (!isAnalyzing) return
       pollCurrentlyPlaying()
       pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
     }
@@ -60,7 +62,7 @@ function App() {
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isAnalyzing]);
 
   useEffect(() => {
     if(!isLoggedIn) return
@@ -85,7 +87,7 @@ function App() {
 
   if (!isLoggedIn) return <SpotifyLogin />;
 
-  return <Home data={history} />;
+  return <Home data={history} isAnalyzing={isAnalyzing} setAnalyzing={setIsAnalyzing} />;
 }
 
 export default App;

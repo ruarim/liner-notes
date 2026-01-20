@@ -82,8 +82,9 @@ const _SidebarHeader = () => {
     return (
         <SidebarHeader className="border-b border-border p-4 h-16 bg-background">
             <div className="flex items-center gap-2">
-                <Music2 className="h-6 w-6 text-primary" />
-                <h2 className="text-lg font-bold text-foreground">Track History</h2>
+                {/* logo */}
+                <Music2 className="h-6 w-6 text-primary" /> 
+                <h2 className="text-lg font-bold text-foreground">Liner Notes</h2>
             </div>
         </SidebarHeader>
     )

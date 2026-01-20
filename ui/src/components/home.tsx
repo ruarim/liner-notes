@@ -53,8 +53,9 @@ export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<
                                         <SidebarMenuButton
                                             onClick={() => seek(i)}
                                             isActive={i === index}
+                                            size="lg"
                                             className={cn(
-                                                "flex items-center gap-3 p-3 rounded-lg transition-all",
+                                                "flex items-center gap-3 h-auto rounded-lg transition-all",
                                                 i === index
                                                     ? "bg-accent text-accent-foreground"
                                                     : "hover:bg-secondary text-foreground"

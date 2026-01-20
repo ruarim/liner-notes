@@ -46,7 +46,7 @@ export default function Home({
                 {/* Sidebar */}
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
-                    <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
+                    {isLoggedIn && <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />}
                 </Sidebar>
 
                 {/* Page content */}

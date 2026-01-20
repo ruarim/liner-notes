@@ -25,7 +25,6 @@ export async function generateContent(track: TrackData) {
             tools: {
                 google_search: google.tools.googleSearch({}),
             },
-            stopWhen: stepCountIs(3),
             prompt: `
                         You are an expert musicologist and cultural historian. 
                         Analyze the song "${track.name}" by "${track.artist}" from the album "${track.album}" (${track.releaseDate || 'unknown date'}).

@@ -28,7 +28,7 @@ export default function Home({
     setAnalyzing: (isAnalyzing: boolean) => void,
     isLoggedIn: boolean,
 }) {
-    const [index, setIndex] = useState(data.length - 1);
+    const [index, setIndex] = useState(0);
     const selectedTrack = useMemo(() => data.at(index), [data, index]);
 
     const setSelectedItem = (newIndex: number) => {
@@ -38,7 +38,7 @@ export default function Home({
         setIndex(newIndex)
     }
 
-    useEffect(() => { setIndex(data.length - 1) }, [data.length])
+    useEffect(() => { setIndex(0) }, [data.length])
 
     return (
         <SidebarProvider defaultOpen={true}>

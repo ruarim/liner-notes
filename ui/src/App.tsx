@@ -20,7 +20,7 @@ function App() {
         return;
       }
 
-      setHistory(result.history)
+      setHistory(result.history.reverse())
       return result.history
     } catch (error) {
       console.error("Fetching history error", error)
@@ -36,9 +36,9 @@ function App() {
         if (prev.length === 0) {
           return [track];
         }
-        const lastTrack = prev[prev.length - 1];
-        if (track.trackId !== lastTrack.trackId) {
-          return [...prev, track];
+        const firstTrack = prev[0];
+        if (track.trackId !== firstTrack.trackId) {
+          return [track, ...prev];
         }
         return prev;
       });

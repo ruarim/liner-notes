@@ -5,11 +5,14 @@ import { AnalysisData, TrackData } from "./types";
 import * as Store from "./store";
 import * as Events from "./events";
 
+const DEFAULT_MODEL = "gemini-3-pro-preview";
+
 export async function generateContent(track: TrackData) {
     console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
+    const modelName = process.env.MODEL_NAME || DEFAULT_MODEL;
     try {
         const { text } = await generateText({
-            model: google("gemini-3-pro-preview"),
+            model: google(modelName),
             output: Output.object({
                 schema: z.object({
                     albumAnalysis: z.string().describe("Analysis of the album's release, critical reception, and production style."),

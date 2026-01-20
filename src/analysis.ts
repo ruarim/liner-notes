@@ -10,7 +10,7 @@ export async function generateContent(track: TrackData) {
     try {
         const { text } = await generateText({
             model: google("gemini-3-pro-preview"),
-            experimental_output: Output.object({
+            output: Output.object({
                 schema: z.object({
                     albumAnalysis: z.string().describe("Analysis of the album's release, critical reception, and production style."),
                     personnelAndPlaces: z.string().describe("Details on the people (producers, musicians) and places (studios, cities) involved."),
@@ -36,14 +36,14 @@ export async function generateContent(track: TrackData) {
                     `,
         });
         const analysis = JSON.parse(text) as AnalysisData
-        const updatedTrack: TrackData = { 
+        const updatedTrack: TrackData = {
             ...track,
             loading: false,
             analysis: { ...analysis }
         }
         Store.updateCache(track.trackId, updatedTrack)
         Events.analysis.emit(Events.analysisDone, updatedTrack);
-        console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)   
+        console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
     } catch (error) {
         console.error(`AI error for ${track.trackId}:`, error);
         Store.updateCache(track.trackId, { ...track, error: "Error retrieving research.", loading: false })

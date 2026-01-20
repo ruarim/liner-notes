@@ -1,10 +1,11 @@
 import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
 import { Loader2 } from 'lucide-react'
+import { Button } from './ui/button';
 
 export default function Insights(
-    { analysis, loading }:
-    { analysis?: AnalysisData, loading?: boolean }
+    { analysis, loading, error }:
+    { analysis?: AnalysisData, loading?: boolean, error?: string }
 ) {
     return (
         <div className={cn(
@@ -18,9 +19,15 @@ export default function Insights(
                     <>Researching Track...</>
                 </div>
             )}
-            {!analysis && !loading && (
+            {!analysis && !loading && error && (
                 <div className='flex items-center justify-center min-h-[500px] text-muted-foreground'>
-                    <p>Select a track to view analysis</p>
+                    <div className='flex flex-col items-center gap-3'>
+                        <p>{error}</p>
+                        {/* TODO */}
+                        <Button>
+                            Try Again
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>

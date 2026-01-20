@@ -122,7 +122,11 @@ export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<
                                     <PlayerCard currentTrack={selectedTrack} />
                                 </div>
                                 <div className="min-h-[500px]">
-                                    <Insights analysis={selectedTrack?.analysis} loading={selectedTrack?.loading} />
+                                    <Insights 
+                                        analysis={selectedTrack?.analysis} 
+                                        loading={selectedTrack?.loading} 
+                                        error={selectedTrack?.error} 
+                                    />
                                 </div>
                             </div>
                         </div>

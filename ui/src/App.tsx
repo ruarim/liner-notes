@@ -51,6 +51,10 @@ function App() {
     }
   };
 
+  // research specific track function
+
+  
+  // research currently playing
   useEffect(() => {
     const fetchData = async () => {
       await fetchHistory()

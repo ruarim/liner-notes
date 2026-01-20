@@ -15,8 +15,19 @@ import {
 } from "./ui/sidebar";
 import { Music2, Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import PlatformLogin from "./platform-connect";
 
-export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<TrackData>, isAnalyzing: boolean, setAnalyzing: (isAnalyzing: boolean) => void }) {
+export default function Home({
+    data,
+    isAnalyzing,
+    setAnalyzing,
+    isLoggedIn,
+}: {
+    data: Array<TrackData>,
+    isAnalyzing: boolean,
+    setAnalyzing: (isAnalyzing: boolean) => void,
+    isLoggedIn: boolean,
+}) {
     const [index, setIndex] = useState(data.length - 1);
     const selectedTrack = useMemo(() => data.at(index), [data, index]);
 
@@ -43,7 +54,7 @@ export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 bg-background">
                         <SidebarTrigger className="text-foreground" />
                         <div className="flex-1" />
-                        <button
+                        {isLoggedIn && <button
                             onClick={() => setAnalyzing(!isAnalyzing)}
                             className={cn(
                                 "px-4 py-2 rounded-full font-bold transition-all duration-200 text-sm",
@@ -53,25 +64,30 @@ export default function Home({ data, isAnalyzing, setAnalyzing }: { data: Array<
                             )}
                         >
                             {isAnalyzing ? 'Stop Analysis' : 'Start Analysis'}
-                        </button>
+                        </button>}
+                        {!isLoggedIn && <>
+                            <PlatformLogin />
+                        </>}
                     </header>
 
-                    <main className="flex-1 overflow-auto p-6 bg-background">
-                        <div className="max-w-6xl mx-auto">
-                            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                                <div className="lg:sticky lg:top-0 lg:self-start">
-                                    <PlayerCard currentTrack={selectedTrack} />
-                                </div>
-                                <div className="min-h-[500px]">
-                                    <Insights
-                                        analysis={selectedTrack?.analysis}
-                                        loading={selectedTrack?.loading}
-                                        error={selectedTrack?.error}
-                                    />
+                    {isLoggedIn && (
+                        <main className="flex-1 overflow-auto p-6 bg-background">
+                            <div className="max-w-6xl mx-auto">
+                                <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                                    <div className="lg:sticky lg:top-0 lg:self-start">
+                                        <PlayerCard currentTrack={selectedTrack} />
+                                    </div>
+                                    <div className="min-h-[500px]">
+                                        <Insights
+                                            analysis={selectedTrack?.analysis}
+                                            loading={selectedTrack?.loading}
+                                            error={selectedTrack?.error}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </main>
+                        </main>
+                    )}
                 </SidebarInset>
             </div>
         </SidebarProvider>
@@ -83,17 +99,17 @@ const _SidebarHeader = () => {
         <SidebarHeader className="border-b border-border p-4 h-16 bg-background">
             <div className="flex items-center gap-2">
                 {/* logo */}
-                <Music2 className="h-6 w-6 text-primary" /> 
+                <Music2 className="h-6 w-6 text-primary" />
                 <h2 className="text-lg font-bold text-foreground">Liner Notes</h2>
             </div>
         </SidebarHeader>
     )
 }
 
-const _SidebarContent = ({ 
-    data, setSelectedItem, index 
-}: { 
-    data: Array<TrackData>, setSelectedItem: (newIndex: number) => void, index: number 
+const _SidebarContent = ({
+    data, setSelectedItem, index
+}: {
+    data: Array<TrackData>, setSelectedItem: (newIndex: number) => void, index: number
 }) => {
     return (
         <SidebarContent className="p-2 bg-background">

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import type { TrackData } from '../../src/types';
-import SpotifyLogin from './components/spotify-login';
 import Home from './components/home';
 
 function App() {
@@ -24,6 +23,7 @@ function App() {
       setHistory(result.history)
       return result.history
     } catch (error) {
+      console.error("Fetching history error", error)
     }
   }
   const pollCurrentlyPlaying = async () => {
@@ -89,9 +89,12 @@ function App() {
     return () => { eventSource.close() };
   }, [isLoggedIn]);
 
-  if (!isLoggedIn) return <SpotifyLogin />;
-
-  return <Home data={history} isAnalyzing={isAnalyzing} setAnalyzing={setIsAnalyzing} />;
+  return <Home 
+    data={history} 
+    isAnalyzing={isAnalyzing} 
+    setAnalyzing={setIsAnalyzing} 
+    isLoggedIn={isLoggedIn} 
+  />;
 }
 
 export default App;

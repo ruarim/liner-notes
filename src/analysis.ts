@@ -24,7 +24,7 @@ export async function generateContent(track: TrackData) {
             },
             stopWhen: stepCountIs(3),
             prompt: `
-                        You are an expert musicologist and historian. 
+                        You are an expert musicologist and cultural historian. 
                         Analyze the song "${track.name}" by "${track.artist}" from the album "${track.album}" (${track.releaseDate || 'unknown date'}).
 
                         Use the Google Search tool to ensure your factual details (dates, personnel, reception) are accurate.

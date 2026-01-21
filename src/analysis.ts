@@ -36,11 +36,17 @@ export async function generateContent(track: TrackData) {
             analysis: { ...analysis }
         }
         Store.updateCache(track.trackId, updatedTrack)
-        Events.analysis.emit(Events.analysisDone, updatedTrack);
+        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
         console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
     } catch (error) {
-        console.error(`AI error for ${track.trackId}:`, error);
-        Store.updateCache(track.trackId, { ...track, error: "Error retrieving research.", loading: false })
+        console.error(`Analysis error for ${track.trackId}:`, error);
+        const updatedTrack: TrackData = {
+            ...track,
+            loading: false,
+            error: 'Error retrieving research'
+        }
+        Store.updateCache(track.trackId, updatedTrack)
+        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
     }
 }
 

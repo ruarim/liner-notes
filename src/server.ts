@@ -65,7 +65,7 @@ app.get('/callback', async (req: Request, res: Response) => {
             expiresAt: Date.now() + response.data.expires_in * 1000,
             spotifyId: userProfile.data.id
         };
-        
+
         const token = jwt.sign(sessionData, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie(cookieName, token, {
@@ -89,16 +89,16 @@ app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: 
     res.json({ history });
 });
 
-app.get('/api/now-playing', authenticateJWT,  async (req: AuthenticatedRequest, res: Response) => {
+app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     const accessToken = req.user?.accessToken;
     const spotifyId = req.user?.spotifyId;
-    
+
     if (!accessToken || !spotifyId) {
         return res.status(401).json({ error: 'Not logged in' });
     }
     try {
         const track = await Spotify.getCurrentlyPlaying(accessToken)
-        if (!track) return res.json(null)
+        if (!track) return res.status(200).json(null)
         const trackDetails: TrackData = {
             name: track.name,
             artist: track.artists.map((a: any) => a.name).join(', '),
@@ -111,13 +111,14 @@ app.get('/api/now-playing', authenticateJWT,  async (req: AuthenticatedRequest, 
         await Store.pushHistory(spotifyId, track.id);
         let cached = await Store.getCacheTrack(track.id);
         if (cached) {
-            res.json(cached);
+            res.status(200).json(cached);
             return;
         }
         await Store.updateCache(track.id, trackDetails);
         Analysis.generateContent(trackDetails);
-        res.json(trackDetails);
+        res.status(200).json(trackDetails);
     } catch (error: any) {
+        console.error('Error during now playing', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 })
@@ -128,25 +129,7 @@ app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
         res.status(500).json({ error: 'spotifyId not found in cookies' })
         return
     }
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-
-    const listener = async (data: TrackData) => {
-        const userHistory = await Store.getTrackHistory(spotifyId);
-        const isRelevant = userHistory.some(t => t.trackId === data.trackId);
-        if (!isRelevant) return;
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
-    };
-
-    Events.analysis.on(Events.analysisDone, listener);
-
-    req.on('close', () => {
-        Events.analysis.off(Events.analysisDone, listener);
-        res.end();
-    });
+    Events.setupAnalysisSSE(req, res, spotifyId);
 });
 
 const startServer = async () => {

@@ -56,8 +56,8 @@ Before you begin, ensure you have the following:
 3. **Configure Environment Variables**:
    Create a `.env` file in the root directory based on `.env.example`:
    ```env
-   CLIENT_ID=your_spotify_client_id
-   CLIENT_SECRET=your_spotify_client_secret
+   SPOTIFY_CLIENT_ID=your_spotify_client_id
+   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
    REDIRECT_URI=http://localhost:8080/callback
    GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
    REDIS_URL=redis://localhost:6379

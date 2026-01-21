@@ -9,15 +9,15 @@ import * as Analysis from './analysis';
 import * as Events from "./events";
 import redisClient, { connectRedis } from './redis';
 import jwt from 'jsonwebtoken';
-import { CLIENT_ID, CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH } from './consts';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH } from './consts';
 import cookieParser from 'cookie-parser';
 import { AuthenticatedRequest, authenticateJWT } from './middleware';
 
 
 const app = express();
 
-if (!CLIENT_ID || !CLIENT_SECRET || !JWT_SECRET) {
-    console.error("Missing CLIENT_ID or CLIENT_SECRET in .env file");
+if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET || !JWT_SECRET) {
+    console.error("Missing SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET in .env file");
     process.exit(1);
 }
 
@@ -28,7 +28,7 @@ app.use(express.static(UI_PATH));
 app.get('/auth', (_: Request, res: Response) => {
     const params = new URLSearchParams({
         response_type: 'code',
-        client_id: CLIENT_ID,
+        client_id: SPOTIFY_CLIENT_ID,
         scope: Spotify.scopes,
         redirect_uri: REDIRECT_URI,
     });
@@ -50,7 +50,7 @@ app.get('/callback', async (req: Request, res: Response) => {
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
+                    Authorization: `Basic ${Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
                 },
             }
         );

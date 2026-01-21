@@ -25,7 +25,7 @@ export const pushHistory = async (userId: string, trackId: string) => {
 export const getTrackHistory = async (userId: string, count = 50): Promise<TrackData[]> => {
     const key = `${HISTORY_KEY_PREFIX}${userId}`;
     
-    const trackIds = await redisClient.lRange(key, 0, count);
+    const trackIds = await redisClient.lRange(key, -count, -1);
     
     if (trackIds.length === 0) return [];
 

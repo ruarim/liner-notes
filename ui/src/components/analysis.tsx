@@ -1,15 +1,15 @@
 import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
-import { Loader2 } from 'lucide-react'
+import { Loader2, Disc3, Music, BookOpen, Film } from 'lucide-react'
 import { Button } from './ui/button';
 
 export default function Insights(
     { analysis, loading, error }:
-    { analysis?: AnalysisData, loading?: boolean, error?: string }
+        { analysis?: AnalysisData, loading?: boolean, error?: string }
 ) {
     return (
         <div className={cn(
-            "w-full bg-card border border-border p-6 rounded-xl text-sm leading-relaxed text-card-foreground shadow-lg",
+            "w-full h-full bg-card border border-border p-6 rounded-xl text-sm leading-relaxed text-card-foreground shadow-lg",
             loading && 'flex items-center justify-center animate-pulse min-h-[500px]'
         )}>
             {analysis && <AnalysisView data={analysis} />}
@@ -45,8 +45,38 @@ const Section = ({ title, content }: { title: string; content: string }) => (
     </div>
 );
 
+type MediaType = 'album' | 'track' | 'book' | 'filmAndTV';
+
+interface RecommendationWithType {
+    name: string;
+    creator: string;
+    reasoning: string;
+    type: MediaType;
+}
+
+const getMediaIcon = (type: MediaType) => {
+    const iconSize = 28;
+    switch (type) {
+        case 'album':
+            return <Disc3 size={iconSize} className="text-primary flex-shrink-0" />;
+        case 'track':
+            return <Music size={iconSize} className="text-primary flex-shrink-0" />;
+        case 'book':
+            return <BookOpen size={iconSize} className="text-primary flex-shrink-0" />;
+        case 'filmAndTV':
+            return <Film size={iconSize} className="text-primary flex-shrink-0" />;
+    }
+};
+
 export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
     if (!data) return null;
+
+    const recommendations: RecommendationWithType[] = [
+        data?.recommendations?.albums?.map(i => ({ ...i, type: 'album' as MediaType })) || [],
+        data?.recommendations?.tracks?.map(i => ({ ...i, type: 'track' as MediaType })) || [],
+        data?.recommendations?.books?.map(i => ({ ...i, type: 'book' as MediaType })) || [],
+        data?.recommendations?.filmsAndTV?.map(i => ({ ...i, type: 'filmAndTV' as MediaType })) || [],
+    ].flat().filter((item) => !!item);
 
     return (
         <div className="w-full h-full overflow-y-auto pr-2">
@@ -59,13 +89,20 @@ export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
                     <h3 className="text-primary font-bold text-lg border-b border-border pb-2 mb-3">
                         Where to Look Next
                     </h3>
-                    <ul className="list-disc pl-5 space-y-2">
-                        {data.recommendations.map((item, index) => (
-                            <li key={index} className="text-card-foreground text-sm leading-relaxed">
-                                {item}
-                            </li>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {recommendations && recommendations.map((item, index) => (
+                            <div key={index} className="text-card-foreground text-sm leading-relaxed">
+                                <div className="flex items-center gap-2">
+                                    {getMediaIcon(item.type)}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold line-clamp-2" title={item.name}>{item.name}</p>
+                                        <p className="text-muted-foreground text-xs line-clamp-2" title={item.creator}>{item.creator}</p>
+                                    </div>
+                                </div>
+                                <p className="mt-1">{item.reasoning}</p>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
 
             </div>

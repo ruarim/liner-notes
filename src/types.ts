@@ -45,10 +45,22 @@ export interface TrackData {
     loading: boolean;
 }
 
+export interface Recommendation {
+    name: string;
+    creator: string;
+    reasoning: string;
+}
+
 export interface AnalysisData {
     albumAnalysis: string;
     personnelAndPlaces: string;
     artistBiography: string;
     culturalContext: string;
-    recommendations: string[];
+    recommendations: {
+        albums: Recommendation[];
+        tracks: Recommendation[];
+        books: Recommendation[];
+        filmsAndTV: Recommendation[];
+    };
+    tags: string[];
 }

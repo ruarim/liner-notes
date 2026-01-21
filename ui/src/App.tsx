@@ -50,14 +50,17 @@ function App() {
       }
     }
   };
-
-  // research specific track function
-
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchHistory()
+    }
+    fetchData();
+  }, [isLoggedIn]);
   
   // research currently playing
   useEffect(() => {
     const fetchData = async () => {
-      await fetchHistory()
       if (!isAnalyzing) return
       pollCurrentlyPlaying()
       pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);

@@ -1,6 +1,6 @@
-import type { TrackData } from "../../../src/types";
+import type { AnalysisData, TrackData } from "../../../src/types";
 
-export default function PlayerCard({ currentTrack }: { currentTrack?: TrackData }) {
+export default function PlayerCard({ currentTrack, analysis }: { currentTrack?: TrackData, analysis?: AnalysisData }) {
     return (
         <div className="bg-card border border-border rounded-xl p-4 shadow-lg">
             <img
@@ -20,6 +20,18 @@ export default function PlayerCard({ currentTrack }: { currentTrack?: TrackData 
                         {currentTrack.album}
                     </p>
                 )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                    {analysis?.tags?.map((tag, index) => (
+                        <span key={index} className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs">
+                            {tag}
+                        </span>
+                    ))}
+                    {!analysis?.tags && Array.from({ length: 5 }).map((_, index) => (
+                        <span key={index} className="px-2 py-1 h-6 w-16 bg-primary/10 text-primary rounded-full text-xs animate-pulse">
+                            
+                        </span>
+                    ))}
+                </div>
             </div>
         </div>
     )

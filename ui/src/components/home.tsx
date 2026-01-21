@@ -52,7 +52,7 @@ export default function Home({
                 {/* Page content */}
                 <SidebarInset className="flex flex-col">
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 bg-background">
-                        <SidebarTrigger className="text-foreground" />
+                        {isLoggedIn && <SidebarTrigger className="text-foreground" />}
                         <div className="flex-1" />
                         {isLoggedIn && <button
                             onClick={() => setAnalyzing(!isAnalyzing)}
@@ -75,7 +75,10 @@ export default function Home({
                             <div className="max-w-6xl mx-auto">
                                 <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
                                     <div className="lg:sticky lg:top-0 lg:self-start">
-                                        <PlayerCard currentTrack={selectedTrack} />
+                                        <PlayerCard 
+                                            currentTrack={selectedTrack} 
+                                            analysis={selectedTrack?.analysis} 
+                                        />
                                     </div>
                                     <div className="min-h-[500px]">
                                         <Insights

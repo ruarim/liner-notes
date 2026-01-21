@@ -137,9 +137,8 @@ app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
     const listener = async (data: TrackData) => {
         const userHistory = await Store.getTrackHistory(spotifyId);
         const isRelevant = userHistory.some(t => t.trackId === data.trackId);
-        if (isRelevant) {
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
-        }
+        if (!isRelevant) return;
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
 
     Events.analysis.on(Events.analysisDone, listener);

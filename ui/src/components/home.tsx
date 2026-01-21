@@ -13,7 +13,7 @@ import {
     SidebarInset,
     SidebarTrigger
 } from "./ui/sidebar";
-import { Music2, Loader2 } from "lucide-react";
+import { Music2, Loader2, Library } from "lucide-react";
 import { cn } from "../lib/utils";
 import PlatformLogin from "./platform-connect";
 
@@ -98,8 +98,7 @@ const _SidebarHeader = () => {
     return (
         <SidebarHeader className="border-b border-border p-4 h-16 bg-background">
             <div className="flex items-center gap-2">
-                {/* logo */}
-                <Music2 className="h-6 w-6 text-primary" />
+                <Library className="h-6 w-6 text-primary" />
                 <h2 className="text-lg font-bold text-foreground">Liner Notes</h2>
             </div>
         </SidebarHeader>

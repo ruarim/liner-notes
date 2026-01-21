@@ -85,6 +85,7 @@ export default function Home({
                                             analysis={selectedTrack?.analysis}
                                             loading={selectedTrack?.loading}
                                             error={selectedTrack?.error}
+                                            trackId={selectedTrack?.trackId}
                                         />
                                     </div>
                                 </div>

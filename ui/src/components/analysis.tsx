@@ -2,15 +2,18 @@ import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
 import { Disc3, Music, BookOpen, Film } from 'lucide-react'
 import { Button } from './ui/button';
+import * as Api from '../lib/api';
 
 export default function Insights({
     analysis,
     loading,
-    error
+    error,
+    trackId
 }: {
     analysis?: AnalysisData,
     loading?: boolean,
-    error?: string
+    error?: string,
+    trackId?: string
 }) {
     return (
         <div className={cn(
@@ -27,10 +30,11 @@ export default function Insights({
                 <div className='flex items-center justify-center min-h-[500px] text-muted-foreground'>
                     <div className='flex flex-col items-center gap-3'>
                         <p>{error}</p>
-                        {/* TODO */}
-                        <Button>
-                            Try Again
-                        </Button>
+                        {trackId && (
+                            <Button onClick={() => Api.analyseTrack(trackId)}>
+                                Try Again
+                            </Button>
+                        )}
                     </div>
                 </div>
             )}

@@ -123,6 +123,21 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
     }
 })
 
+app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    const trackId = req.query.trackId as string;
+    const track = await Store.getCacheTrack(trackId);
+    if (!track) return res.status(404).json({ error: 'Track not found' });
+    const updatedTrack = { 
+        ...track, 
+        loading: true, 
+        error: undefined 
+    };
+    await Store.updateCache(trackId, updatedTrack);
+    Events.analysis.emit(Events.analysisUpdate, updatedTrack);
+    Analysis.generateContent(updatedTrack);
+    res.status(200).json({ message: 'Analysis triggered' });
+});
+
 app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
     const spotifyId = req.user?.spotifyId;
     if (!spotifyId) {

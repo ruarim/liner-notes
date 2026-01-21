@@ -1,0 +1,84 @@
+# Music Research Tool
+
+A powerful web application that enhances your music listening experience by providing deep musicological and cultural context for your currently playing Spotify tracks, powered by Google's Gemini AI.
+
+## 🚀 Features
+
+- **Real-time Spotify Integration**: Connects to your Spotify account to monitor your "Now Playing" status.
+- **AI-Powered Deep Research**: Uses Google Gemini and AI-integrated Google Search to analyze:
+  - **Album Context**: Critical reception, production style, and release history.
+  - **Personnel & Places**: Details on producers, musicians, and studios.
+  - **Artist Biography**: Focused on the artist's career during the specific era of the song.
+  - **Cultural Context**: Explores the musical scene, genre movements, and cultural climate.
+- **Curated Recommendations**: Get actionable suggestions for related albums, tracks, books, films, and TV shows.
+- **Track History**: Keeps a record of previously analyzed songs for easy reference.
+- **Real-time Updates**: Uses Server-Sent Events (SSE) to stream analysis results as they are generated.
+
+## 🛠 Tech Stack
+
+### Backend
+- **Core**: Node.js, Express, TypeScript
+- **AI**: [Vercel AI SDK](https://sdk.vercel.ai/)
+- **Caching/Storage**: Redis
+- **Auth**: Spotify OAuth 2.0 & JWT sessions
+
+### Frontend
+- **Framework**: React, Vite
+- **Styling**: Tailwind CSS 4
+- **Components**: Radix UI
+- **Icons**: Lucide React
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following:
+- Node.js (v18+)
+- Redis instance running Locally or via Cloud
+- [Spotify Developer](https://developer.spotify.com/) App (Client ID and Secret)
+- [Google AI Studio](https://aistudio.google.com/) API Key
+
+## ⚙️ Setup & Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd music-research-tool
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   # Install root dependencies (Backend)
+   npm install
+
+   # Install UI dependencies
+   npm install --prefix ui
+   ```
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory based on `.env.example`:
+   ```env
+   CLIENT_ID=your_spotify_client_id
+   CLIENT_SECRET=your_spotify_client_secret
+   REDIRECT_URI=http://localhost:8080/callback
+   GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
+   REDIS_URL=redis://localhost:6379
+   JWT_SECRET=your_random_jwt_secret
+   ```
+
+4. **Running the Application**:
+   ```bash
+   # Starts both backend and frontend in development mode
+   npm run dev
+   ```
+   The application will be available at `http://localhost:8080`.
+
+## 🚢 Deployment
+
+The project includes a `deploy.sh` script for deploying to Google Cloud Platform (GCP). It handles building the UI, the backend, and pushing the final bundle.
+
+```bash
+./deploy.sh
+```
+
+## 📄 License
+
+This project is licensed under the ISC License.

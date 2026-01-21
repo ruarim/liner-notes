@@ -46,15 +46,15 @@ export default function Home({
                 {/* Sidebar */}
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
-                    {isLoggedIn && <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />}
+                    <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
                 </Sidebar>
 
                 {/* Page content */}
                 <SidebarInset className="flex flex-col">
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 bg-background">
-                        {isLoggedIn && <SidebarTrigger className="text-foreground" />}
+                        <SidebarTrigger className="text-foreground" />
                         <div className="flex-1" />
-                        {isLoggedIn && <button
+                        {isLoggedIn ? <button
                             onClick={() => setAnalyzing(!isAnalyzing)}
                             className={cn(
                                 "px-4 py-2 rounded-full font-bold transition-all duration-200 text-sm",
@@ -64,34 +64,30 @@ export default function Home({
                             )}
                         >
                             {isAnalyzing ? 'Stop Analysis' : 'Start Analysis'}
-                        </button>}
-                        {!isLoggedIn && <>
-                            <PlatformLogin />
-                        </>}
+                        </button> : <PlatformLogin />}
                     </header>
 
-                    {isLoggedIn && (
-                        <main className="flex-1 overflow-auto p-6 bg-background">
-                            <div className="max-w-6xl mx-auto">
-                                <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                                    <div className="lg:sticky lg:top-0 lg:self-start">
-                                        <PlayerCard 
-                                            currentTrack={selectedTrack} 
-                                            analysis={selectedTrack?.analysis} 
-                                        />
-                                    </div>
-                                    <div className="min-h-screen">
-                                        <Insights
-                                            analysis={selectedTrack?.analysis}
-                                            loading={selectedTrack?.loading}
-                                            error={selectedTrack?.error}
-                                            trackId={selectedTrack?.trackId}
-                                        />
-                                    </div>
+
+                    <main className="flex-1 overflow-auto p-6 bg-background">
+                        <div className="max-w-6xl mx-auto">
+                            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                                <div className="lg:sticky lg:top-0 lg:self-start">
+                                    <PlayerCard
+                                        currentTrack={selectedTrack}
+                                        analysis={selectedTrack?.analysis}
+                                    />
+                                </div>
+                                <div className="min-h-screen">
+                                    <Insights
+                                        analysis={selectedTrack?.analysis}
+                                        loading={selectedTrack?.loading}
+                                        error={selectedTrack?.error}
+                                        trackId={selectedTrack?.trackId}
+                                    />
                                 </div>
                             </div>
-                        </main>
-                    )}
+                        </div>
+                    </main>
                 </SidebarInset>
             </div>
         </SidebarProvider>

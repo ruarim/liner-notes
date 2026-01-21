@@ -25,7 +25,7 @@ app.set('trust proxy', 1); // trust the first hop (the load balancer)
 app.use(cookieParser());
 app.use(express.static(UI_PATH));
 
-app.get('/login', (_: Request, res: Response) => {
+app.get('/auth', (_: Request, res: Response) => {
     const params = new URLSearchParams({
         response_type: 'code',
         client_id: CLIENT_ID,

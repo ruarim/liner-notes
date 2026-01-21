@@ -14,8 +14,8 @@ function App() {
   const pollCurrentlyPlaying = async () => {
     try {
       const track = await Api.getCurrentTrack()
-      setIsLoggedIn(true);
       if (track === null) return
+      setIsLoggedIn(true);
       setHistory((prev) => {
         if (prev.length === 0) {
           return [track];
@@ -59,7 +59,7 @@ function App() {
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
-  }, [isLoggedIn, isAnalyzing]);
+  }, [isAnalyzing]);
 
   useEffect(() => {
     if (!isLoggedIn) return

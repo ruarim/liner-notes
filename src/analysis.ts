@@ -1,33 +1,32 @@
 import { google } from "@ai-sdk/google";
-import { generateText, Output } from "ai";
+import { generateText, Output, stepCountIs } from "ai";
 import { z } from 'zod';
 import { AnalysisData, TrackData } from "./types";
 import * as Store from "./store";
 import * as Events from "./events";
 
-const DEFAULT_MODEL = "gemini-3-pro-preview";
+const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
 
 export async function generateContent(track: TrackData) {
     console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
-    const modelName = process.env.MODEL_NAME || DEFAULT_MODEL;
+    
     try {
+        const prompt =
+            "You are an expert musicologist and cultural historian. \n" +
+            `Analyze the song "${track.name}" by "${track.artist}" from the album "${track.album}" (${track.releaseDate || 'unknown date'}).\n` +
+            "Use the Google Search tool to ensure your factual details (dates, personnel, reception, recommendations, etc) are accurate. \n" +
+            "Fill out the schema fields concisely in full sentences. \n" +
+            "Focus on novel information which would be interesting to someone who already knows a lot about music. \n" +
+            "Ensure a none conversational style, the output will be shown directly to the user.";
+
         const { output } = await generateText({
-            model: google(modelName),
+            model: google(MODEL_NAME),
             output: schema,
             tools: {
                 google_search: google.tools.googleSearch({}),
             },
-            prompt: `
-                        You are an expert musicologist and cultural historian. 
-                        Analyze the song "${track.name}" by "${track.artist}" from the album "${track.album}" (${track.releaseDate || 'unknown date'}).
-
-                        Use the Google Search tool to ensure your factual details (dates, personnel, reception, recommendations, etc) are accurate.
-
-                        Fill out the schema fields concisely in full sentences. 
-                        Focus on novel information which would be interesting to someone who already knows a lot about music.
-
-                        Ensure a none conversational style, the output will be shown directly to the user.
-                    `,
+            stopWhen: stepCountIs(3),
+            prompt,
         });
         const analysis: AnalysisData = output;
         const updatedTrack: TrackData = {

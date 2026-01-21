@@ -5,6 +5,8 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - '**'
 
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
@@ -47,3 +49,11 @@ jobs:
             --subnet=default \
             --env-vars-file .env \
             --allow-unauthenticated
+
+      - name: Show Service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "Service deployed to: $SERVICE_URL"
+          echo "### 🚀 Service deployed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "URL: $SERVICE_URL" >> $GITHUB_STEP_SUMMARY
+

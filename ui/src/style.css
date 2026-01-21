@@ -4,11 +4,13 @@
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #282828; 
+  background: #282828;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #555; 
+  background: #555;
   border-radius: 4px;
 }
 
@@ -101,6 +103,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -127,5 +130,23 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.439 0 0);
+  }
+}
+
+@layer utilities {
+  @keyframes music-bar {
+
+    0%,
+    100% {
+      height: 20%;
+    }
+
+    50% {
+      height: 100%;
+    }
+  }
+
+  .animate-music-bar {
+    animation: music-bar ease-in-out infinite;
   }
 }

@@ -11,11 +11,13 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
     SidebarInset,
-    SidebarTrigger
+    SidebarTrigger,
+    SidebarFooter
 } from "./ui/sidebar";
 import { Music2, Loader2, Library } from "lucide-react";
 import { cn } from "../lib/utils";
 import PlatformLogin from "./platform-connect";
+import { NavUser } from "./nav-user";
 
 export default function Home({
     data,
@@ -47,6 +49,9 @@ export default function Home({
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
                     <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
+                    <SidebarFooter>
+                        <NavUser />
+                    </SidebarFooter>
                 </Sidebar>
 
                 {/* Page content */}

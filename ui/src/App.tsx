@@ -3,6 +3,7 @@ import axios from 'axios';
 import type { TrackData } from '../../src/types';
 import Home from './components/home';
 import * as Api from './lib/api';
+import { ThemeProvider } from 'next-themes';
 
 function App() {
   const [history, setHistory] = useState<TrackData[]>([]);
@@ -83,12 +84,19 @@ function App() {
     return () => { eventSource.close() };
   }, [isLoggedIn]);
 
-  return <Home
-    data={history}
-    isAnalyzing={isAnalyzing}
-    setAnalyzing={setIsAnalyzing}
-    isLoggedIn={isLoggedIn}
-  />;
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+    >
+      <Home
+        data={history}
+        isAnalyzing={isAnalyzing}
+        setAnalyzing={setIsAnalyzing}
+        isLoggedIn={isLoggedIn}
+      />
+    </ThemeProvider>)
 }
 
 export default App;

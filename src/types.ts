@@ -53,6 +53,7 @@ export interface Recommendation {
 
 export interface AnalysisData {
     albumAnalysis: string;
+    // trackAnalysis: string;
     personnelAndPlaces: string;
     artistBiography: string;
     culturalContext: string;
@@ -64,3 +65,10 @@ export interface AnalysisData {
     };
     tags: string[];
 }
+
+export interface SessionData {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: number;
+    spotifyId: string;
+} 

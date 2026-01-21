@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 
-import { SpotifyTokenResponse, TrackData } from './types';
+import { SessionData, SpotifyTokenResponse, TrackData } from './types';
 import * as Store from './store';
 import * as Spotify from './spotify';
 import * as Analysis from './analysis';
@@ -59,7 +59,7 @@ app.get('/callback', async (req: Request, res: Response) => {
             headers: { Authorization: `Bearer ${response.data.access_token}` }
         });
 
-        const sessionData = {
+        const sessionData: SessionData = {
             accessToken: response.data.access_token,
             refreshToken: response.data.refresh_token,
             expiresAt: Date.now() + response.data.expires_in * 1000,

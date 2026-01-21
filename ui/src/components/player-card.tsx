@@ -3,21 +3,21 @@ import type { AnalysisData, TrackData } from "../../../src/types";
 export default function PlayerCard({ currentTrack, analysis }: { currentTrack?: TrackData, analysis?: AnalysisData }) {
     return (
         <div className="bg-card border border-border rounded-xl p-4 shadow-lg">
-            {currentTrack?.image ? (
-                <img
-                    src={currentTrack.image}
-                    alt="Album Art"
+                {currentTrack?.image ? (
+                    <img
+                        src={currentTrack.image}
+                        alt="Album Art"
                     className="w-full rounded-lg shadow-md mb-4"
-                />
-            ) : (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 300 300"
+                    />
+                ) : (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 300 300"
                     className="w-full rounded-lg shadow-md mb-4"
-                >
-                    <rect width="300" height="300" fill="#cccccc" />
-                </svg>
-            )}
+                    >
+                        <rect width="300" height="300" fill="#cccccc" />
+                    </svg>
+                )}
             <div className="space-y-2 text-center">
                 <h2 className="text-xl font-bold text-card-foreground">
                     {currentTrack?.name ? currentTrack.name : 'Nothing playing'}

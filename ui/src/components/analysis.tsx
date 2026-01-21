@@ -1,21 +1,25 @@
 import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
-import { Loader2, Disc3, Music, BookOpen, Film } from 'lucide-react'
+import { Disc3, Music, BookOpen, Film } from 'lucide-react'
 import { Button } from './ui/button';
 
-export default function Insights(
-    { analysis, loading, error }:
-        { analysis?: AnalysisData, loading?: boolean, error?: string }
-) {
+export default function Insights({
+    analysis,
+    loading,
+    error
+}: {
+    analysis?: AnalysisData,
+    loading?: boolean,
+    error?: string
+}) {
     return (
         <div className={cn(
             "w-full h-full bg-card border border-border p-6 rounded-xl text-sm leading-relaxed text-card-foreground shadow-lg",
-            loading && 'flex items-center justify-center animate-pulse min-h-[500px]'
+            loading && 'flex items-center justify-center animate-pulse min-h-[500px] bg-muted/50'
         )}>
             {analysis && <AnalysisView data={analysis} />}
             {loading && (
                 <div className='opacity-50 flex flex-col items-center gap-2'>
-                    <Loader2 size={100} className='animate-spin text-primary' />
                     <>Researching Track...</>
                 </div>
             )}

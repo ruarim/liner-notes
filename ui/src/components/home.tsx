@@ -80,7 +80,7 @@ export default function Home({
                                             analysis={selectedTrack?.analysis} 
                                         />
                                     </div>
-                                    <div className="min-h-[500px]">
+                                    <div className="min-h-screen">
                                         <Insights
                                             analysis={selectedTrack?.analysis}
                                             loading={selectedTrack?.loading}

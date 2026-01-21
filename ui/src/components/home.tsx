@@ -135,14 +135,27 @@ const _SidebarContent = ({
                                 )}
                             >
                                 <div className="relative flex-shrink-0">
-                                    <img
-                                        src={track.image ?? 'https://via.placeholder.com/48?text=?'}
-                                        alt={track.name}
-                                        className={cn(
-                                            "w-12 h-12 rounded-md object-cover transition-all",
-                                            i === index ? "ring-2 ring-primary" : "opacity-80"
-                                        )}
-                                    />
+                                    {track.image ? (
+                                        <img
+                                            src={track.image}
+                                            alt={track.name}
+                                            className={cn(
+                                                "w-12 h-12 rounded-md object-cover transition-all",
+                                                i === index ? "ring-2 ring-primary" : "opacity-80"
+                                            )}
+                                        />
+                                    ) : (
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 48 48"
+                                            className={cn(
+                                                "w-12 h-12 rounded-md object-cover transition-all",
+                                                i === index ? "ring-2 ring-primary" : "opacity-80"
+                                            )}
+                                        >
+                                            <rect width="48" height="48" fill="#cccccc" />
+                                        </svg>
+                                    )}
                                     {track.loading && (
                                         <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
                                             <Loader2 className="h-5 w-5 animate-spin text-white" />

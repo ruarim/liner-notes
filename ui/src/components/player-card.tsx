@@ -3,11 +3,21 @@ import type { AnalysisData, TrackData } from "../../../src/types";
 export default function PlayerCard({ currentTrack, analysis }: { currentTrack?: TrackData, analysis?: AnalysisData }) {
     return (
         <div className="bg-card border border-border rounded-xl p-4 shadow-lg">
-            <img
-                src={currentTrack?.image ? currentTrack.image : 'https://via.placeholder.com/300?text=Paused'}
-                alt="Album Art"
-                className="w-full rounded-lg shadow-md mb-4"
-            />
+            {currentTrack?.image ? (
+                <img
+                    src={currentTrack.image}
+                    alt="Album Art"
+                    className="w-full rounded-lg shadow-md mb-4"
+                />
+            ) : (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 300 300"
+                    className="w-full rounded-lg shadow-md mb-4"
+                >
+                    <rect width="300" height="300" fill="#cccccc" />
+                </svg>
+            )}
             <div className="space-y-2 text-center">
                 <h2 className="text-xl font-bold text-card-foreground">
                     {currentTrack?.name ? currentTrack.name : 'Nothing playing'}
@@ -28,7 +38,6 @@ export default function PlayerCard({ currentTrack, analysis }: { currentTrack?: 
                     ))}
                     {!analysis?.tags && Array.from({ length: 5 }).map((_, index) => (
                         <span key={index} className="px-2 py-1 h-6 w-16 bg-primary/10 text-primary rounded-full text-xs animate-pulse">
-                            
                         </span>
                     ))}
                 </div>

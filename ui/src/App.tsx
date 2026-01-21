@@ -7,7 +7,7 @@ import * as Api from './lib/api';
 function App() {
   const [history, setHistory] = useState<TrackData[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(true);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 

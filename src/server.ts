@@ -118,7 +118,7 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         Analysis.generateContent(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
-        console.error('Error during now playing', error);
+        console.error('Error during now playing', error?.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 })

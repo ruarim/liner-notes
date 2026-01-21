@@ -15,7 +15,6 @@ function App() {
     try {
       const track = await Api.getCurrentTrack()
       if (track === null) return
-      setIsLoggedIn(true);
       setHistory((prev) => {
         if (prev.length === 0) {
           return [track];
@@ -28,8 +27,8 @@ function App() {
       });
     } catch (error) {
       console.error("Polling error", error);
-      // If we get a 401 here, the session probably expired
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      // If we get a 401/404, we're not logged in
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 404)) {
         setIsLoggedIn(false);
       }
     }
@@ -38,20 +37,22 @@ function App() {
   const fetchHistory = async () => {
     try {
       const history = await Api.getHistory()
-      if (history.length === 0) {
-        setIsLoggedIn(false);
-        return;
-      }
       setHistory(history.reverse())
+      // If we successfully fetched history, we're logged in
+      setIsLoggedIn(true);
     } catch (error) {
       console.error("Fetching history error", error)
+      // If we get a 401/404, we're not logged in
+      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 404)) {
+        setIsLoggedIn(false);
+      }
     }
   }
 
-  useEffect(() => { fetchHistory() }, [isLoggedIn]);
+  useEffect(() => { fetchHistory() }, []);
   useEffect(() => {
     const runAnalysis = async () => {
-      if (!isAnalyzing) return
+      if (!isAnalyzing || !isLoggedIn) return
       pollCurrentlyPlaying()
       pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
     }
@@ -59,7 +60,7 @@ function App() {
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
-  }, [isAnalyzing]);
+  }, [isAnalyzing, isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) return

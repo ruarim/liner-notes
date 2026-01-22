@@ -35,7 +35,7 @@ export function NavUser({
         <SidebarMenu>
             <SidebarMenuItem className="flex items-center justify-between gap-2 h-10">
                 <Toggle
-                    className="border border h-10 gap-2 flex grow justify-start"
+                    className="border border h-10 gap-3 flex grow justify-start"
                     onClick={() => setAnalyzing(!isAnalyzing)}
                 >
                     <EqVisualizer isPlaying={isAnalyzing} className="w-6 h-6" barCount={4} />

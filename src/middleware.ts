@@ -1,16 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { cookieName } from './consts';
-
-interface JWTPayload {
-    accessToken: string;
-    refreshToken: string;
-    expiresAt: number;
-    spotifyId: string;
-}
+import { SessionData } from './types';
 
 export interface AuthenticatedRequest extends Request {
-    user?: JWTPayload;
+    user?: SessionData;
 }
 
 export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -18,7 +12,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
     if (!token) return res.status(401).send('Unauthorized');
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as SessionData;
         req.user = decoded;
         next();
     } catch (err) {

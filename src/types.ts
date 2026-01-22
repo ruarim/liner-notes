@@ -33,7 +33,7 @@ export interface SpotifyTokenResponse {
     refresh_token: string;
 }
 
-export interface TrackData {
+export interface TrackDetails {
     trackId: string;
     name: string;
     artist: string;

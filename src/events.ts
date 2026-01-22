@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { Request, Response } from 'express';
 import * as Store from './store';
-import { TrackData } from './types';
+import { TrackDetails } from './types';
 
 export const analysis = new EventEmitter();
 export const analysisUpdate = 'analysis-update'
@@ -12,9 +12,9 @@ export const setupAnalysisSSE = (req: Request, res: Response, spotifyId: string)
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const listener = async (data: TrackData) => {
-        const userHistory = await Store.getTrackHistory(spotifyId);
-        const isRelevant = userHistory.some(t => t.trackId === data.trackId);
+    const listener = async (data: TrackDetails) => {
+        // this could be optimized
+        const isRelevant = await Store.hasTrackInHistory(spotifyId, data.trackId);
         if (!isRelevant) return;
         res.write(`data: ${JSON.stringify(data)}\n\n`);
     };

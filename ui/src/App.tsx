@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import type { TrackData } from '../../src/types';
+import type { TrackDetails } from '../../src/types';
 import Home from './components/home';
 import * as Api from './lib/api';
 import { ThemeProvider } from 'next-themes';
 
 function App() {
-  const [history, setHistory] = useState<TrackData[]>([]);
+  const [history, setHistory] = useState<TrackDetails[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -68,7 +68,7 @@ function App() {
     const eventSource = new EventSource(Api.eventsURL);
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data) as TrackData;
+      const data = JSON.parse(event.data) as TrackDetails;
       setHistory(prev =>
         prev.map(p => p.trackId == data.trackId
           ? data
@@ -95,6 +95,7 @@ function App() {
         isAnalyzing={isAnalyzing}
         setAnalyzing={setIsAnalyzing}
         isLoggedIn={isLoggedIn}
+        setHistory={setHistory}
       />
     </ThemeProvider>)
 }

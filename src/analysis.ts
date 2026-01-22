@@ -1,15 +1,15 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output, stepCountIs } from "ai";
 import { z } from 'zod';
-import { AnalysisData, TrackData } from "./types";
+import { AnalysisData, TrackDetails } from "./types";
 import * as Store from "./store";
 import * as Events from "./events";
 
 const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
 
-export async function generateContent(track: TrackData) {
+export async function generateContent(track: TrackDetails) {
     console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
-    
+
     try {
         const prompt =
             "You are an expert musicologist and cultural historian. \n" +
@@ -29,7 +29,7 @@ export async function generateContent(track: TrackData) {
             prompt,
         });
         const analysis: AnalysisData = output;
-        const updatedTrack: TrackData = {
+        const updatedTrack: TrackDetails = {
             ...track,
             loading: false,
             analysis: { ...analysis }
@@ -39,7 +39,7 @@ export async function generateContent(track: TrackData) {
         console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
     } catch (error) {
         console.error(`Analysis error for ${track.trackId}:`, error);
-        const updatedTrack: TrackData = {
+        const updatedTrack: TrackDetails = {
             ...track,
             loading: false,
             error: 'Error retrieving research'

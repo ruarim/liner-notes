@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import type { TrackData } from "../../../src/types";
+import type { TrackDetails } from "../../../src/types";
 import Insights from "./analysis";
-import PlayerCard from "./player-card";
 import {
     SidebarProvider,
     Sidebar,
@@ -14,22 +13,26 @@ import {
     SidebarTrigger,
     SidebarFooter
 } from "./ui/sidebar";
-import { Music2, Loader2, Library, Network, History } from "lucide-react";
+import { Music2, Library, Network } from "lucide-react";
 import { cn } from "../lib/utils";
 import PlatformLogin from "./platform-connect";
 import { NavUser } from "./nav-user";
 import { Button } from "./ui/button";
+import AnalyseRecent from "./analyse-recent";
+import TrackCard, { TrackItem } from "./track";
 
 export default function Home({
     history,
     isAnalyzing,
     setAnalyzing,
     isLoggedIn,
+    setHistory,
 }: {
-    history: Array<TrackData>,
+    history: Array<TrackDetails>,
     isAnalyzing: boolean,
     setAnalyzing: (isAnalyzing: boolean) => void,
     isLoggedIn: boolean,
+    setHistory: React.Dispatch<React.SetStateAction<Array<TrackDetails>>>,
 }) {
     const [index, setIndex] = useState(0);
     const selectedTrack = useMemo(() => history.at(index), [history, index]);
@@ -63,7 +66,7 @@ export default function Home({
                         {!isLoggedIn
                             ? <PlatformLogin />
                             : <>
-                                <Button variant="outline">Analyse History <History /></Button>
+                                <AnalyseRecent setHistory={setHistory} history={history} />
                                 <Button size="icon" variant="ghost"><Network /></Button>
                             </>}
                     </header>
@@ -73,8 +76,8 @@ export default function Home({
                         <div className="max-w-6xl mx-auto">
                             <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
                                 <div className="lg:sticky lg:top-0 lg:self-start">
-                                    <PlayerCard
-                                        currentTrack={selectedTrack}
+                                    <TrackCard
+                                        track={selectedTrack}
                                         analysis={selectedTrack?.analysis}
                                     />
                                 </div>
@@ -109,7 +112,7 @@ const _SidebarHeader = () => {
 const _SidebarContent = ({
     tracks, setSelectedItem, index
 }: {
-    tracks: Array<TrackData>, setSelectedItem: (newIndex: number) => void, index: number
+    tracks: Array<TrackDetails>, setSelectedItem: (newIndex: number) => void, index: number
 }) => {
     return (
         <SidebarContent className="p-2 bg-background">
@@ -134,48 +137,7 @@ const _SidebarContent = ({
                                         : "hover:bg-secondary text-foreground"
                                 )}
                             >
-                                <div className="relative flex-shrink-0">
-                                    {track.image ? (
-                                        <img
-                                            src={track.image}
-                                            alt={track.name}
-                                            className={cn(
-                                                "w-12 h-12 rounded-md object-cover transition-all",
-                                                i === index ? "ring-2 ring-primary" : "opacity-80"
-                                            )}
-                                        />
-                                    ) : (
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 48 48"
-                                            className={cn(
-                                                "w-12 h-12 rounded-md object-cover transition-all",
-                                                i === index ? "ring-2 ring-primary" : "opacity-80"
-                                            )}
-                                        >
-                                            <rect width="48" height="48" fill="#cccccc" />
-                                        </svg>
-                                    )}
-                                    {track.loading && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
-                                            <Loader2 className="h-5 w-5 animate-spin text-white" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className={cn(
-                                        "text-sm font-medium truncate",
-                                        i === index ? "text-accent-foreground" : "text-foreground"
-                                    )}>
-                                        {track.name}
-                                    </p>
-                                    <p className={cn(
-                                        "text-xs truncate",
-                                        i === index ? "text-accent-foreground/70" : "text-muted-foreground"
-                                    )}>
-                                        {track.artist}
-                                    </p>
-                                </div>
+                                <TrackItem track={track} selected={i === index} />
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))

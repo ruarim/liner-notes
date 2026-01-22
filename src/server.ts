@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 
-import { SessionData, SpotifyTokenResponse, TrackData } from './types';
+import { SessionData, SpotifyTokenResponse, TrackDetails } from './types';
 import * as Store from './store';
 import * as Spotify from './spotify';
 import * as Analysis from './analysis';
@@ -87,6 +87,7 @@ app.get('/logout', (_: Request, res: Response) => {
     res.redirect('/');
 });
 
+// rename to analysed
 app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     const spotifyId = req.user?.spotifyId;
     if (!spotifyId) return res.status(401).json({ error: 'Unauthorized' });
@@ -104,43 +105,71 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
     try {
         const track = await Spotify.getCurrentlyPlaying(accessToken)
         if (!track) return res.status(200).json(null)
-        const trackDetails: TrackData = {
-            name: track.name,
-            artist: track.artists.map((a: any) => a.name).join(', '),
-            image: track.album.images[0]?.url,
-            trackId: track.id,
-            album: track.album.name,
-            releaseDate: track.album.release_date,
+        const trackDetails: TrackDetails = {
+            ...Spotify.convertSpotifyTrackToTrackDetails(track),
             loading: true,
         }
-        await Store.pushHistory(spotifyId, track.id);
-        let cached = await Store.getCacheTrack(track.id);
+        await Store.pushHistory(spotifyId, trackDetails.trackId);
+        let cached = await Store.getCacheTrack(trackDetails.trackId);
         if (cached) {
             res.status(200).json(cached);
             return;
         }
-        await Store.updateCache(track.id, trackDetails);
+        await Store.updateCache(trackDetails.trackId, trackDetails);
         Analysis.generateContent(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
-        console.error('Error during now playing', error?.message);
+        console.error('Error during now playing', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.get('/api/recently-played', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const accessToken = req.user?.accessToken;
+        if (!accessToken) return res.status(401).json({ error: 'Unauthorized' });
+        const spotifyRecentlyPlayed = (await Spotify.getRecentlyPlayed(accessToken)).items;
+        const recentlyPlayed: Array<TrackDetails> = spotifyRecentlyPlayed.map(({ track }) => {
+            return {
+                ...Spotify.convertSpotifyTrackToTrackDetails(track),
+                loading: false,
+            }
+        })
+        res.json(recentlyPlayed);
+    } catch (error: any) {
+        console.error('Error during recently played', error?.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 })
 
 app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
-    const trackId = req.query.trackId as string;
-    const track = await Store.getCacheTrack(trackId);
-    if (!track) return res.status(404).json({ error: 'Track not found' });
-    const updatedTrack = {
-        ...track,
-        loading: true,
-        error: undefined
-    };
-    await Store.updateCache(trackId, updatedTrack);
-    Events.analysis.emit(Events.analysisUpdate, updatedTrack);
-    Analysis.generateContent(updatedTrack);
-    res.status(200).json({ message: 'Analysis triggered' });
+    try {
+        const accessToken = req.user?.accessToken as string;
+        const spotifyId = req.user?.spotifyId as string;
+        const trackId = req.query.trackId as string;
+        let track = await Store.getCacheTrack(trackId);
+        if (!track) {
+            const spotifyTrack = await Spotify.getTrack(trackId, accessToken);
+            track = Spotify.convertSpotifyTrackToTrackDetails(spotifyTrack);
+            await Store.pushHistory(spotifyId, track.trackId);
+        }
+        if(track.analysis || track.loading) {
+            res.status(200).json({ message: 'Analysis already completed' });
+            return;
+        }
+        const updatedTrack = {
+            ...track,
+            loading: true,
+            error: undefined
+        };
+        await Store.updateCache(track.trackId, updatedTrack);
+        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
+        Analysis.generateContent(updatedTrack);
+        res.status(200).json({ message: 'Analysis triggered' });
+    } catch (error: any) {
+        console.error('Error during analyse', error?.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {

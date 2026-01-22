@@ -28,8 +28,7 @@ export function NavUser({
 }) {
     const { isMobile } = useSidebar()
     const logout = () => {
-        document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-        window.location.reload();
+        window.location.href = "/logout";
     }
     return (
         <SidebarMenu>

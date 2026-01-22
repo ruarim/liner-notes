@@ -82,6 +82,11 @@ app.get('/callback', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/logout', (_: Request, res: Response) => {
+    res.clearCookie(cookieName);
+    res.redirect('/');
+});
+
 app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     const spotifyId = req.user?.spotifyId;
     if (!spotifyId) return res.status(401).json({ error: 'Unauthorized' });
@@ -127,10 +132,10 @@ app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: 
     const trackId = req.query.trackId as string;
     const track = await Store.getCacheTrack(trackId);
     if (!track) return res.status(404).json({ error: 'Track not found' });
-    const updatedTrack = { 
-        ...track, 
-        loading: true, 
-        error: undefined 
+    const updatedTrack = {
+        ...track,
+        loading: true,
+        error: undefined
     };
     await Store.updateCache(trackId, updatedTrack);
     Events.analysis.emit(Events.analysisUpdate, updatedTrack);

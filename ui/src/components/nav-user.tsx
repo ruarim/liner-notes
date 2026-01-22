@@ -33,10 +33,11 @@ export function NavUser({
     }
     return (
         <SidebarMenu>
-            <SidebarMenuItem className="flex items-center justify-between gap-2 h-10">
+            <SidebarMenuItem className="flex items-center justify-between gap-1 h-10">
                 <Toggle
                     className="border border h-10 gap-3 flex grow justify-start"
-                    onClick={() => setAnalyzing(!isAnalyzing)}
+                    onPressedChange={setAnalyzing}
+                    pressed={isAnalyzing}
                 >
                     <EqVisualizer isPlaying={isAnalyzing} className="w-6 h-6" barCount={4} />
                     <span>Analyse now playing</span>
@@ -45,7 +46,7 @@ export function NavUser({
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="sm"
-                            className="w-8 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            className="w-8 h-10 border border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-accent hover:text-sidebar-accent-foreground"
                         >
                             <EllipsisVertical className="ml-auto size-4" />
                         </SidebarMenuButton>

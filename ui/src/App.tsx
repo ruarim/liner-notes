@@ -91,7 +91,7 @@ function App() {
       enableSystem
     >
       <Home
-        data={history}
+        history={history}
         isAnalyzing={isAnalyzing}
         setAnalyzing={setIsAnalyzing}
         isLoggedIn={isLoggedIn}

@@ -14,33 +14,34 @@ import {
     SidebarTrigger,
     SidebarFooter
 } from "./ui/sidebar";
-import { Music2, Loader2, Library } from "lucide-react";
+import { Music2, Loader2, Library, Network, History } from "lucide-react";
 import { cn } from "../lib/utils";
 import PlatformLogin from "./platform-connect";
 import { NavUser } from "./nav-user";
+import { Button } from "./ui/button";
 
 export default function Home({
-    data,
+    history,
     isAnalyzing,
     setAnalyzing,
     isLoggedIn,
 }: {
-    data: Array<TrackData>,
+    history: Array<TrackData>,
     isAnalyzing: boolean,
     setAnalyzing: (isAnalyzing: boolean) => void,
     isLoggedIn: boolean,
 }) {
     const [index, setIndex] = useState(0);
-    const selectedTrack = useMemo(() => data.at(index), [data, index]);
+    const selectedTrack = useMemo(() => history.at(index), [history, index]);
 
     const setSelectedItem = (newIndex: number) => {
-        const N = data.length - 1
+        const N = history.length - 1
         if (newIndex < 0) newIndex = 0
         if (newIndex > N) newIndex = N
         setIndex(newIndex)
     }
 
-    useEffect(() => { setIndex(0) }, [data.length])
+    useEffect(() => { setIndex(0) }, [history.length])
 
     return (
         <SidebarProvider defaultOpen={true}>
@@ -48,7 +49,7 @@ export default function Home({
                 {/* Sidebar */}
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
-                    <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
+                    <_SidebarContent tracks={history} setSelectedItem={setSelectedItem} index={index} />
                     <SidebarFooter className="bg-background">
                         {isLoggedIn && <NavUser isAnalyzing={isAnalyzing} setAnalyzing={setAnalyzing} />}
                     </SidebarFooter>
@@ -59,7 +60,12 @@ export default function Home({
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 bg-background">
                         <SidebarTrigger className="text-foreground" />
                         <div className="flex-1" />
-                        {!isLoggedIn && <PlatformLogin />}
+                        {!isLoggedIn
+                            ? <PlatformLogin />
+                            : <>
+                                <Button variant="outline">Analyse History <History /></Button>
+                                <Button size="icon" variant="ghost"><Network /></Button>
+                            </>}
                     </header>
 
 
@@ -101,21 +107,21 @@ const _SidebarHeader = () => {
 }
 
 const _SidebarContent = ({
-    data, setSelectedItem, index
+    tracks, setSelectedItem, index
 }: {
-    data: Array<TrackData>, setSelectedItem: (newIndex: number) => void, index: number
+    tracks: Array<TrackData>, setSelectedItem: (newIndex: number) => void, index: number
 }) => {
     return (
         <SidebarContent className="p-2 bg-background">
             <SidebarMenu>
-                {data.length === 0 ? (
+                {tracks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
                         <Music2 className="h-12 w-12 mb-4 opacity-50" />
                         <p className="text-sm">No tracks yet</p>
                         <p className="text-xs mt-1">Play a song on Spotify</p>
                     </div>
                 ) : (
-                    data.map((track, i) => (
+                    tracks.map((track, i) => (
                         <SidebarMenuItem key={`track-${i}`}>
                             <SidebarMenuButton
                                 onClick={() => setSelectedItem(i)}

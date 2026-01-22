@@ -49,7 +49,7 @@ export default function Home({
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
                     <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
-                    <SidebarFooter>
+                    <SidebarFooter className="bg-background">
                         {isLoggedIn && <NavUser isAnalyzing={isAnalyzing} setAnalyzing={setAnalyzing} />}
                     </SidebarFooter>
                 </Sidebar>

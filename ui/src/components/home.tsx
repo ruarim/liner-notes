@@ -50,7 +50,7 @@ export default function Home({
                     <_SidebarHeader />
                     <_SidebarContent data={data} setSelectedItem={setSelectedItem} index={index} />
                     <SidebarFooter>
-                        <NavUser />
+                        {isLoggedIn && <NavUser isAnalyzing={isAnalyzing} setAnalyzing={setAnalyzing} />}
                     </SidebarFooter>
                 </Sidebar>
 
@@ -59,17 +59,7 @@ export default function Home({
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 bg-background">
                         <SidebarTrigger className="text-foreground" />
                         <div className="flex-1" />
-                        {isLoggedIn ? <button
-                            onClick={() => setAnalyzing(!isAnalyzing)}
-                            className={cn(
-                                "px-4 py-2 rounded-full font-bold transition-all duration-200 text-sm",
-                                isAnalyzing
-                                    ? 'border border-destructive text-destructive hover:border-destructive/90'
-                                    : 'border border-primary hover:border-primary/90'
-                            )}
-                        >
-                            {isAnalyzing ? 'Stop Analysis' : 'Start Analysis'}
-                        </button> : <PlatformLogin />}
+                        {!isLoggedIn && <PlatformLogin />}
                     </header>
 
 

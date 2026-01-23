@@ -19,18 +19,28 @@ export function ResizableOverlay({
     onOpenChange: (isOpen: boolean) => void
 }) {
     const { isMobile } = useSidebar()
-    const [widthPx, setWidthPx] = useState(defaultWidthPx);
+    const [widthPx, setWidthPx] = useState(isMobile ? (window.innerWidth * 0.9) : defaultWidthPx);
     const [isResizing, setIsResizing] = useState(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen && isMobile) {
+            setWidthPx(window.innerWidth);
+        } 
+        else if (isOpen && widthPx > maxWidthPx) {
+            setWidthPx(maxWidthPx);
+        }
+    }, [isOpen, isMobile, maxWidthPx, widthPx]);
 
     useEffect(() => {
         const handleMove = (clientX: number) => {
             if (!isResizing) return;
 
             const newWidth = window.innerWidth - clientX;
-            const maxWidth = isMobile ? (window.innerWidth * 0.9) : maxWidthPx;
+            const maxWidth = isMobile ? (window.innerWidth) : maxWidthPx;
+            const minWidth = isMobile ? (window.innerWidth * 0.1) : minWidthPx;
 
-            if (newWidth >= minWidthPx && newWidth <= maxWidth) {
+            if (newWidth >= minWidth && newWidth <= maxWidth) {
                 setWidthPx(newWidth);
             }
         };
@@ -77,10 +87,7 @@ export function ResizableOverlay({
                     "flex w-4 -ml-2 items-center justify-center cursor-col-resize z-30 group hover:bg-accent/50 transition-colors",
                     isResizing && "bg-accent"
                 )}
-                onMouseDown={(e) => {
-                    e.preventDefault();
-                    setIsResizing(true);
-                }}
+                onMouseDown={() => setIsResizing(true)}
                 onTouchStart={() => setIsResizing(true)}
             >
                 <div className="w-1 h-8 bg-border rounded-full group-hover:bg-primary/50 transition-colors" />

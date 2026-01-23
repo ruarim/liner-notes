@@ -1,39 +1,44 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import { useSidebar } from "./ui/sidebar";
 
 export function ResizableOverlay({
     defaultWidthPx,
     minWidthPx,
-    maxWidthPercent,
+    maxWidthPx,
     children,
     isOpen,
     onOpenChange
 }: {
     defaultWidthPx: number,
     minWidthPx: number,
-    maxWidthPercent: number,
+    maxWidthPx: number,
     children: React.ReactNode,
     isOpen: boolean,
     onOpenChange: (isOpen: boolean) => void
 }) {
+    const { isMobile } = useSidebar()
     const [widthPx, setWidthPx] = useState(defaultWidthPx);
     const [isResizing, setIsResizing] = useState(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
+        const handleMove = (clientX: number) => {
             if (!isResizing) return;
 
-            const newWidth = window.innerWidth - e.clientX;
-            const maxWidth = window.innerWidth * maxWidthPercent / 100;
+            const newWidth = window.innerWidth - clientX;
+            const maxWidth = isMobile ? (window.innerWidth * 0.9) : maxWidthPx;
 
             if (newWidth >= minWidthPx && newWidth <= maxWidth) {
                 setWidthPx(newWidth);
             }
         };
 
-        const handleMouseUp = () => {
+        const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+        const handleTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX);
+
+        const handleEnd = () => {
             setIsResizing(false);
             document.body.style.cursor = 'default';
             document.body.style.userSelect = 'auto';
@@ -41,18 +46,22 @@ export function ResizableOverlay({
 
         if (isResizing) {
             window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchmove', handleTouchMove);
+            window.addEventListener('touchend', handleEnd);
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
         }
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('mouseup', handleEnd);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleEnd);
             document.body.style.cursor = 'default';
             document.body.style.userSelect = 'auto';
         };
-    }, [isResizing]);
+    }, [isResizing, isMobile, minWidthPx, maxWidthPx]);
 
     if (!isOpen) return <></>
 
@@ -72,6 +81,7 @@ export function ResizableOverlay({
                     e.preventDefault();
                     setIsResizing(true);
                 }}
+                onTouchStart={() => setIsResizing(true)}
             >
                 <div className="w-1 h-8 bg-border rounded-full group-hover:bg-primary/50 transition-colors" />
             </div>

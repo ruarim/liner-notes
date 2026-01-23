@@ -39,9 +39,7 @@ export default function AnalyseRecent({
 
     return (
         <DropdownMenu onOpenChange={(open) => {
-            if (open) {
-                fetchTracks();
-            }
+            if (open) fetchTracks();
         }}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline">

@@ -72,3 +72,7 @@ export interface SessionData {
     expiresAt: number;
     spotifyId: string;
 } 
+
+export interface SpotifyUser {
+    id: string;
+}

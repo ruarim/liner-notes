@@ -1,30 +1,81 @@
 import axios from "axios";
-import { SpotifyNowPlayingResponse, SpotifyTrack, TrackDetails } from "./types";
+import { SpotifyNowPlayingResponse, SpotifyTrack, TrackDetails, SessionData, SpotifyTokenResponse, SpotifyUser } from "./types";
+import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from "./consts";
 
-export const getCurrentlyPlaying = async (accessToken: string): Promise<SpotifyTrack | null> => {
-    const response = await axios.get<SpotifyNowPlayingResponse>(
-        'https://api.spotify.com/v1/me/player/currently-playing',
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+export const getRefreshedAccessToken = async (refreshToken: string): Promise<SpotifyTokenResponse> => {
+    const params = new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+    });
+
+    const response = await axios.post<SpotifyTokenResponse>(
+        'https://accounts.spotify.com/api/token',
+        params,
+        {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Basic ${Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+            },
+        }
     );
 
-    const track = response.data.item;
-    return track
-}
-
-export const getTrack = async (trackId: string, accessToken: string): Promise<SpotifyTrack> => {
-    const response = await axios.get<SpotifyTrack>(
-        `https://api.spotify.com/v1/tracks/${trackId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
     return response.data;
 };
 
-export const getRecentlyPlayed = async (accessToken: string): Promise<{ items: { track: SpotifyTrack }[] }> => {
-    const response = await axios.get<{ items: { track: SpotifyTrack }[] }>(
-        'https://api.spotify.com/v1/me/player/recently-played',
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    return response.data;
+const authenticatedRequest = async <T>(
+    session: Omit<SessionData, 'spotifyId'>,
+    request: (accessToken: string) => Promise<T>
+): Promise<T> => {
+    try {
+        return await request(session.accessToken);
+    } catch (error: any) {
+        if (error.response?.status === 401) {
+            try {
+                const newTokens = await getRefreshedAccessToken(session.refreshToken);
+                session.accessToken = newTokens.access_token;
+                if (newTokens.refresh_token) {
+                    session.refreshToken = newTokens.refresh_token;
+                }
+                // ideally we should update the session in the store/cookie here as well preventing future 401s
+                // but for now we just retry the request
+                return await request(session.accessToken);
+            } catch (refreshError) {
+                console.error("Failed to refresh token", refreshError);
+                throw error; // Throw the original 401 or the refresh error? Probably original makes more sense to upstream
+            }
+        }
+        throw error;
+    }
+};
+
+export const getCurrentlyPlaying = async (session: Omit<SessionData, 'spotifyId'>): Promise<SpotifyTrack | null> => {
+    return authenticatedRequest(session, async (accessToken) => {
+        const response = await axios.get<SpotifyNowPlayingResponse>(
+            'https://api.spotify.com/v1/me/player/currently-playing',
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        return response.data.item;
+    });
+}
+
+export const getTrack = async (trackId: string, session: Omit<SessionData, 'spotifyId'>): Promise<SpotifyTrack> => {
+    return authenticatedRequest(session, async (accessToken) => {
+        const response = await axios.get<SpotifyTrack>(
+            `https://api.spotify.com/v1/tracks/${trackId}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        return response.data;
+    });
+};
+
+export const getRecentlyPlayed = async (session: Omit<SessionData, 'spotifyId'>): Promise<{ items: { track: SpotifyTrack }[] }> => {
+    return authenticatedRequest(session, async (accessToken) => {
+        const response = await axios.get<{ items: { track: SpotifyTrack }[] }>(
+            'https://api.spotify.com/v1/me/player/recently-played',
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        return response.data;
+    });
 }
 
 export const convertSpotifyTrackToTrackDetails = (track: SpotifyTrack): TrackDetails => {
@@ -37,6 +88,16 @@ export const convertSpotifyTrackToTrackDetails = (track: SpotifyTrack): TrackDet
         releaseDate: track.album.release_date,
         loading: false,
     };
+}
+
+export const getUser = async (session: Omit<SessionData, 'spotifyId'>): Promise<SpotifyUser> => {
+    return authenticatedRequest(session, async (accessToken) => {
+        const response = await axios.get<SpotifyUser>(
+            'https://api.spotify.com/v1/me',
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        return response.data;
+    });
 }
 
 export const tokenUrl = 'https://accounts.spotify.com/api/token';

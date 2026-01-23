@@ -55,15 +55,15 @@ app.get('/callback', async (req: Request, res: Response) => {
             }
         );
 
-        const userProfile = await axios.get('https://api.spotify.com/v1/me', {
-            headers: { Authorization: `Bearer ${response.data.access_token}` }
-        });
-
-        const sessionData: SessionData = {
+        const tokenData = {
             accessToken: response.data.access_token,
             refreshToken: response.data.refresh_token,
             expiresAt: Date.now() + response.data.expires_in * 1000,
-            spotifyId: userProfile.data.id
+        };
+        const userProfile = await Spotify.getUser(tokenData);
+        const sessionData = {
+            ...tokenData,
+            spotifyId: userProfile.id
         };
 
         const token = jwt.sign(sessionData, JWT_SECRET, { expiresIn: '7d' });
@@ -87,7 +87,7 @@ app.get('/logout', (_: Request, res: Response) => {
     res.redirect('/');
 });
 
-// rename to analysed
+// rename to analysis-history
 app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     const spotifyId = req.user?.spotifyId;
     if (!spotifyId) return res.status(401).json({ error: 'Unauthorized' });
@@ -96,20 +96,19 @@ app.get('/api/history', authenticateJWT, async (req: AuthenticatedRequest, res: 
 });
 
 app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
-    const accessToken = req.user?.accessToken;
-    const spotifyId = req.user?.spotifyId;
-
-    if (!accessToken || !spotifyId) {
+    // we should really validate that the user object actully contains the field we need
+    const user = req.user;
+    if (!user) {
         return res.status(401).json({ error: 'Not logged in' });
     }
     try {
-        const track = await Spotify.getCurrentlyPlaying(accessToken)
+        const track = await Spotify.getCurrentlyPlaying(user) 
         if (!track) return res.status(200).json(null)
         const trackDetails: TrackDetails = {
             ...Spotify.convertSpotifyTrackToTrackDetails(track),
             loading: true,
         }
-        await Store.pushHistory(spotifyId, trackDetails.trackId);
+        await Store.pushHistory(user.spotifyId, trackDetails.trackId);
         let cached = await Store.getCacheTrack(trackDetails.trackId);
         if (cached) {
             res.status(200).json(cached);
@@ -126,9 +125,9 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
 
 app.get('/api/recently-played', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const accessToken = req.user?.accessToken;
-        if (!accessToken) return res.status(401).json({ error: 'Unauthorized' });
-        const spotifyRecentlyPlayed = (await Spotify.getRecentlyPlayed(accessToken)).items;
+        const user = req.user;
+        if (!user) return res.status(401).json({ error: 'Not logged in' });
+        const spotifyRecentlyPlayed = (await Spotify.getRecentlyPlayed(user)).items;
         const recentlyPlayed: Array<TrackDetails> = spotifyRecentlyPlayed.map(({ track }) => {
             return {
                 ...Spotify.convertSpotifyTrackToTrackDetails(track),
@@ -144,16 +143,16 @@ app.get('/api/recently-played', authenticateJWT, async (req: AuthenticatedReques
 
 app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const accessToken = req.user?.accessToken as string;
-        const spotifyId = req.user?.spotifyId as string;
+        const user = req.user;
+        if (!user) return res.status(401).json({ error: 'Not logged in' });
         const trackId = req.query.trackId as string;
         let track = await Store.getCacheTrack(trackId);
         if (!track) {
-            const spotifyTrack = await Spotify.getTrack(trackId, accessToken);
+            const spotifyTrack = await Spotify.getTrack(trackId, user);
             track = Spotify.convertSpotifyTrackToTrackDetails(spotifyTrack);
-            await Store.pushHistory(spotifyId, track.trackId);
+            await Store.pushHistory(user.spotifyId, track.trackId);
         }
-        if(track.analysis || track.loading) {
+        if (track.analysis || track.loading) {
             res.status(200).json({ message: 'Analysis already completed' });
             return;
         }

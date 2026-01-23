@@ -20,6 +20,8 @@ import { NavUser } from "./nav-user";
 import { Button } from "./ui/button";
 import AnalyseRecent from "./analyse-recent";
 import TrackCard, { TrackItem } from "./track";
+import { ResizableOverlay } from "./resizable-overlay";
+import { RelatedGraph } from "./related-graph";
 
 export default function Home({
     history,
@@ -35,6 +37,7 @@ export default function Home({
     setHistory: React.Dispatch<React.SetStateAction<Array<TrackDetails>>>,
 }) {
     const [index, setIndex] = useState(0);
+    const [isGraphOpen, setIsGraphOpen] = useState(false);
     const selectedTrack = useMemo(() => history.at(index), [history, index]);
 
     const setSelectedItem = (newIndex: number) => {
@@ -66,32 +69,52 @@ export default function Home({
                         {!isLoggedIn
                             ? <PlatformLogin />
                             : <>
-                                <AnalyseRecent setHistory={setHistory} history={history} />
-                                <Button size="icon" variant="ghost"><Network /></Button>
+                                <AnalyseRecent
+                                    setHistory={setHistory}
+                                    history={history}
+                                />
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => setIsGraphOpen(p => !p)}
+                                    className={cn(isGraphOpen && "bg-accent")}
+                                >
+                                    <Network />
+                                </Button>
                             </>}
                     </header>
 
-
-                    <main className="flex-1 overflow-auto p-6 bg-background">
-                        <div className="max-w-6xl mx-auto">
-                            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                                <div className="lg:sticky lg:top-0 lg:self-start">
-                                    <TrackCard
-                                        track={selectedTrack}
-                                        analysis={selectedTrack?.analysis}
-                                    />
-                                </div>
-                                <div className="min-h-screen">
-                                    <Insights
-                                        analysis={selectedTrack?.analysis}
-                                        loading={selectedTrack?.loading}
-                                        error={selectedTrack?.error}
-                                        trackId={selectedTrack?.trackId}
-                                    />
+                    <div className="relative flex-1 overflow-hidden">
+                        <div className="absolute inset-0 overflow-auto p-6 bg-background">
+                            <div className="max-w-6xl mx-auto">
+                                <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                                    <div className="lg:sticky lg:top-0 lg:self-start">
+                                        <TrackCard
+                                            track={selectedTrack}
+                                            analysis={selectedTrack?.analysis}
+                                        />
+                                    </div>
+                                    <div className="min-h-screen">
+                                        <Insights
+                                            analysis={selectedTrack?.analysis}
+                                            loading={selectedTrack?.loading}
+                                            error={selectedTrack?.error}
+                                            trackId={selectedTrack?.trackId}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </main>
+                        <ResizableOverlay
+                            defaultWidthPx={400}
+                            minWidthPx={200}
+                            maxWidthPercent={80}
+                            isOpen={isGraphOpen}
+                            onOpenChange={setIsGraphOpen}
+                        >
+                            <RelatedGraph />
+                        </ResizableOverlay>
+                    </div>
                 </SidebarInset>
             </div>
         </SidebarProvider>

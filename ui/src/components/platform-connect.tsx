@@ -1,7 +1,7 @@
 import { AUTH } from "../lib/paths";
 
 export default function PlatformLogin() {
-    // add dropdown for different platforms
+    // TODO: add dropdown for different platforms
 
     return (
         <a

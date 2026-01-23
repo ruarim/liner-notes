@@ -1,4 +1,4 @@
-import type { AnalysisData, TrackDetails } from "../../../src/types"
+import type { TrackDetails } from "../../../src/types"
 import { cn } from "../lib/utils"
 import { Loader2 } from "lucide-react"
 
@@ -49,7 +49,7 @@ export const TrackItem = ({ track, selected }: { track: TrackDetails, selected: 
     </>
 }
 
-export default function TrackCard({ track, analysis }: { track?: TrackDetails, analysis?: AnalysisData }) {
+export default function TrackCard({ track }: { track?: TrackDetails }) {
     return (
         <div className="bg-card border border-border rounded-xl p-4 shadow-lg">
                 {track?.image ? (
@@ -80,12 +80,12 @@ export default function TrackCard({ track, analysis }: { track?: TrackDetails, a
                     </p>
                 )}
                 <div className="flex flex-wrap gap-2 pt-2">
-                    {analysis?.tags?.map((tag, index) => (
+                    {track?.analysis?.tags?.map((tag, index) => (
                         <span key={index} className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs">
                             {tag}
                         </span>
                     ))}
-                    {!analysis?.tags && Array.from({ length: 5 }).map((_, index) => (
+                    {!track?.analysis?.tags && Array.from({ length: 5 }).map((_, index) => (
                         <span key={index} className="px-2 py-1 h-6 w-16 bg-primary/10 text-primary rounded-full text-xs animate-pulse">
                         </span>
                     ))}

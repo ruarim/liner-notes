@@ -89,10 +89,7 @@ export default function Home({
                             <div className="max-w-6xl mx-auto">
                                 <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
                                     <div className="lg:sticky lg:top-0 lg:self-start">
-                                        <TrackCard
-                                            track={selectedTrack}
-                                            analysis={selectedTrack?.analysis}
-                                        />
+                                        <TrackCard track={selectedTrack} />
                                     </div>
                                     <div className="min-h-screen">
                                         <Insights
@@ -112,7 +109,10 @@ export default function Home({
                             isOpen={isGraphOpen}
                             onOpenChange={setIsGraphOpen}
                         >
-                            <RelatedGraph />
+                            {selectedTrack 
+                                ? <RelatedGraph track={selectedTrack} /> 
+                                : <p>Select a track to view related graph.</p>
+                            }
                         </ResizableOverlay>
                     </div>
                 </SidebarInset>

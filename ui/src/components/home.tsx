@@ -24,6 +24,7 @@ import { ResizableOverlay } from "./resizable-overlay";
 import { RelatedGraph } from "./related-graph";
 import { useWindowSize } from "../hooks/use-window-size";
 import { ReactFlowProvider } from "@xyflow/react";
+import { InfoDialog } from "./info-dialog";
 
 const SIDEBAR_WIDTH = 255;
 
@@ -86,6 +87,7 @@ export default function Home({
                         {!isLoggedIn
                             ? <PlatformLogin />
                             : <>
+                                <InfoDialog />
                                 <AnalyseRecent
                                     setHistory={setHistory}
                                     history={history}

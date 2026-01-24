@@ -54,15 +54,27 @@ export default function Home({
 
     useEffect(() => { setIndex(0) }, [history.length])
 
+    const findIndexAndSelect = (track: TrackDetails) => {
+        const index = history.findIndex((t) => t.trackId === track.trackId);
+        setSelectedItem(index);
+    };
+
     return (
         <SidebarProvider defaultOpen={true}>
             <div className="flex h-screen w-screen bg-background">
                 {/* Sidebar */}
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
-                    <_SidebarContent tracks={history} setSelectedItem={setSelectedItem} index={index} />
+                    <_SidebarContent 
+                        tracks={history} 
+                        setSelectedItem={setSelectedItem} 
+                        index={index} 
+                    />
                     <SidebarFooter className="bg-background">
-                        {isLoggedIn && <NavUser isAnalyzing={isAnalyzing} setAnalyzing={setAnalyzing} />}
+                        {isLoggedIn && <NavUser 
+                            isAnalyzing={isAnalyzing} 
+                            setAnalyzing={setAnalyzing} 
+                        />}
                     </SidebarFooter>
                 </Sidebar>
 
@@ -116,7 +128,10 @@ export default function Home({
                         >
                             {selectedTrack
                                 ? <ReactFlowProvider>
-                                    <RelatedGraph track={selectedTrack} />
+                                    <RelatedGraph 
+                                        track={selectedTrack} 
+                                        onNodeClick={findIndexAndSelect}
+                                    />
                                 </ReactFlowProvider>
                                 : <p>Select a track to view related graph.</p>
                             }

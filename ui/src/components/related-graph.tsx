@@ -12,23 +12,45 @@ import { Loader2 } from 'lucide-react';
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 67;
 
-const TrackNode = ({ data }: { data: { track: TrackDetails } }) => {
+interface TrackNodeData {
+    track: TrackDetails;
+    onClick: () => void;
+    selected: boolean;
+}
+
+const TrackNode = ({ data }: { data: TrackNodeData }) => {
     return (
-        // add click to view track details
-        <div className='border border flex p-2 rounded-md gap-2 bg-background' style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}>
-            <Handle type="target" position={Position.Top} className="!opacity-0" />
-            <TrackItem track={data.track} selected={true} />
+        <div
+            className={cn(
+                'border border flex p-2 rounded-md gap-2 bg-background hover:bg-accent',
+                data.selected && 'border-primary'
+            )}
+            style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
+            onClick={data.onClick}
+        >
+            <Handle
+                type="target"
+                position={Position.Top}
+                className="!opacity-0"
+            />
+            <TrackItem track={data.track} selected={data.selected} />
             {/* add tags for related tracks */}
-            <Handle type="source" position={Position.Bottom} className="!opacity-0" />
+            <Handle
+                type="source"
+                position={Position.Bottom}
+                className="!opacity-0"
+            />
         </div>
     );
 };
 
-const nodeTypes = {
-    track: TrackNode,
-};
-
-export function RelatedGraph({ track }: { track: TrackDetails }) {
+export function RelatedGraph({
+    track,
+    onNodeClick
+}: {
+    track: TrackDetails,
+    onNodeClick: (track: TrackDetails) => void
+}) {
     const { layout } = useAutoLayout();
     const { fitView } = useReactFlow();
     const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +83,11 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
             id: track.trackId,
             type: 'track',
             position: { x: 0, y: 0 },
-            data: { track },
+            data: {
+                track,
+                onClick: () => onNodeClick(track),
+                selected: true,
+            },
         };
 
         if (relatedTracks.length > 0) {
@@ -69,7 +95,11 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
                 id: related.trackId,
                 type: 'track',
                 position: { x: 0, y: 0 },
-                data: { track: related },
+                data: {
+                    track: related,
+                    onClick: () => onNodeClick(related),
+                    selected: false,
+                },
             }));
             initialNodes = [selectedNode, ...relatedTrackNodes];
             initialEdges = relatedTracks.map((related) => ({
@@ -109,7 +139,7 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
+            nodeTypes={{ track: TrackNode }}
             proOptions={{ hideAttribution: true }}
             minZoom={0.1}
             maxZoom={1.25}
@@ -122,8 +152,17 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
                 position="bottom-right"
                 showInteractive={false}
             />
-            <Background variant={BackgroundVariant.Dots} gap={24} size={1} />
-            {isLoading && <Loader2 className="animate-spin absolute top-1/2 left-1/2" size={48} />}
+            <Background
+                variant={BackgroundVariant.Dots}
+                gap={24}
+                size={1}
+            />
+            {isLoading && (
+                <Loader2
+                    className="animate-spin absolute top-1/2 left-1/2"
+                    size={48}
+                />
+            )}
         </ReactFlow>
     )
 }

@@ -19,10 +19,13 @@ import PlatformLogin from "./platform-connect";
 import { NavUser } from "./nav-user";
 import { Button } from "./ui/button";
 import AnalyseRecent from "./analyse-recent";
-import TrackCard, { TrackItem } from "./track";
+import { TrackItem, TrackCard } from "./track";
 import { ResizableOverlay } from "./resizable-overlay";
 import { RelatedGraph } from "./related-graph";
 import { useWindowSize } from "../hooks/use-window-size";
+import { ReactFlowProvider } from "@xyflow/react";
+
+const SIDEBAR_WIDTH = 255;
 
 export default function Home({
     history,
@@ -37,7 +40,6 @@ export default function Home({
     isLoggedIn: boolean,
     setHistory: React.Dispatch<React.SetStateAction<Array<TrackDetails>>>,
 }) {
-    const SIDEBAR_WIDTH = 255;
     const { width: windowWidth } = useWindowSize();
     const [index, setIndex] = useState(0);
     const [isGraphOpen, setIsGraphOpen] = useState(false);
@@ -106,14 +108,16 @@ export default function Home({
                             </div>
                         </div>
                         <ResizableOverlay
-                            defaultWidthPx={400}
-                            minWidthPx={200}
+                            defaultWidthPx={500}
+                            minWidthPx={180}
                             maxWidthPx={windowWidth - SIDEBAR_WIDTH}
                             isOpen={isGraphOpen}
                             onOpenChange={setIsGraphOpen}
                         >
                             {selectedTrack
-                                ? <RelatedGraph track={selectedTrack} />
+                                ? <ReactFlowProvider>
+                                    <RelatedGraph track={selectedTrack} />
+                                </ReactFlowProvider>
                                 : <p>Select a track to view related graph.</p>
                             }
                         </ResizableOverlay>

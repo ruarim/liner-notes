@@ -180,6 +180,19 @@ app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
     Events.setupAnalysisSSE(req, res, spotifyId);
 });
 
+app.get('/api/related-tracks', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(401).json({ error: 'Not logged in' });
+        const trackId = req.query.trackId as string;
+        const relatedTracks = await Store.getRelatedTracks(trackId, user.spotifyId);
+        res.json(relatedTracks);
+    } catch (error: any) {
+        console.error('Error during related tracks', error?.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
 const startServer = async () => {
     await connectRedis();
     app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

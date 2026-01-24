@@ -43,3 +43,33 @@ export const getTrackHistory = async (userId: string, count = 50): Promise<Track
         .filter((data): data is string => data !== null)
         .map(data => JSON.parse(data));
 };
+
+// based on trackId get items with at least one tag in common
+// then rank by number of tags in common 
+export const getRelatedTracks = async (trackId: string, userId: string, count = 5) => {
+    const track = await getCacheTrack(trackId);
+    if (!track || !track.analysis) return [];
+    const history = await getTrackHistory(userId);
+    const topTracks = findTracksWithCommonTags(track, history).slice(0, count);
+    return topTracks;
+};
+
+const findTracksWithCommonTags = (track: TrackDetails, tracks: TrackDetails[]) => {
+    const targetTags = track?.analysis?.tags ?? [];
+    const commonTracks = tracks.reduce<TrackDetails[]>((prev, curr) => {
+        if (curr.trackId === track.trackId) return prev;
+        if (curr.analysis?.tags?.length === 0) return prev;
+        if (curr.analysis?.tags?.some(tag => targetTags.includes(tag))) {
+            return [...prev, curr];
+        }
+        return prev;
+    }, []);
+
+    const countTagsInCommon = (track: TrackDetails) => {
+        const tags = track.analysis?.tags ?? [];
+        return targetTags.filter(tag => tags.includes(tag)).length;
+    };
+    return commonTracks.sort((a, b) => {
+        return countTagsInCommon(b) - countTagsInCommon(a);
+    });
+};

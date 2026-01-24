@@ -48,7 +48,7 @@ export default function AnalyseRecent({
                     <ChevronsUpDown />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-[600px]">
+            <DropdownMenuContent align="end" className="max-h-[600px] max-w-[250px]">
                 {loading && tracks.length === 0 && (
                     <DropdownMenuItem disabled>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

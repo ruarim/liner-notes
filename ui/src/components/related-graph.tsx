@@ -9,10 +9,13 @@ import { cn } from '../lib/utils';
 import { useAutoLayout } from '../hooks/use-auto-layout';
 import { Loader2 } from 'lucide-react';
 
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 67;
+
 const TrackNode = ({ data }: { data: { track: TrackDetails } }) => {
     return (
         // add click to view track details
-        <div className='border border flex p-2 rounded-md gap-2 w-[200px] bg-background'>
+        <div className='border border flex p-2 rounded-md gap-2 bg-background' style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}>
             <Handle type="target" position={Position.Top} className="!opacity-0" />
             <TrackItem track={data.track} selected={true} />
             {/* add tags for related tracks */}
@@ -58,7 +61,7 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
             id: track.trackId,
             type: 'track',
             position: { x: 0, y: 0 },
-            data: { track: track },
+            data: { track },
         };
 
         if (relatedTracks.length > 0) {
@@ -84,6 +87,8 @@ export function RelatedGraph({ track }: { track: TrackDetails }) {
             direction: 'LR',
             nodes: initialNodes,
             edges: initialEdges,
+            nodeWidth: NODE_WIDTH,
+            nodeHeight: NODE_HEIGHT,
         });
 
         setNodes(layoutedNodes);

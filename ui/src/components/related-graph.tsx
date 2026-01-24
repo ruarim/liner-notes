@@ -30,14 +30,14 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
         >
             <Handle
                 type="target"
-                position={Position.Top}
+                position={Position.Left}
                 className="!opacity-0"
             />
             <TrackItem track={data.track} selected={data.selected} />
             {/* add tags for related tracks */}
             <Handle
                 type="source"
-                position={Position.Bottom}
+                position={Position.Right}
                 className="!opacity-0"
             />
         </div>

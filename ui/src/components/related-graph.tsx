@@ -3,7 +3,7 @@ import '@xyflow/react/dist/base.css';
 import { ReactFlow, type Node, Controls, Background, BackgroundVariant, type Edge, useNodesState, useEdgesState, ConnectionLineType, Handle, Position, useReactFlow } from '@xyflow/react';
 import type { TrackDetails } from '../../../src/types';
 import { useEffect, useState } from 'react';
-import { TrackItem } from './track';
+import { OverflowTags, TrackItem } from './track';
 import * as Api from '../lib/api';
 import { cn } from '../lib/utils';
 import { useAutoLayout } from '../hooks/use-auto-layout';
@@ -27,7 +27,12 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
                 'border border flex p-2 rounded-md gap-2 bg-background hover:bg-accent',
                 data.selected && 'border-primary'
             )}
-            style={{ width: NODE_WIDTH, height: data.commonTags ? RELATED_NODE_HEIGHT : NODE_HEIGHT }}
+            style={{
+                width: NODE_WIDTH,
+                height: data.commonTags
+                    ? RELATED_NODE_HEIGHT
+                    : NODE_HEIGHT
+            }}
             onClick={data.onClick}
         >
             <Handle
@@ -39,13 +44,14 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
                 <div className="flex gap-2">
                     <TrackItem track={data.track} selected={data.selected} />
                 </div>
-                {data.commonTags && <div className="flex gap-1 overflow-hidden">
-                    {data.commonTags.map((tag, index) => (
-                        <span key={index} className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs whitespace-nowrap flex-shrink-0">
-                            {tag}
-                        </span>
-                    ))}
-                </div>}
+                {data.commonTags && <OverflowTags
+                    tags={data.commonTags}
+                    containerWidth={NODE_WIDTH}
+                    gap={4}
+                    charWidth={7}
+                    padding={16}
+                    moreWidth={30}
+                />}
             </div>
             <Handle
                 type="source"

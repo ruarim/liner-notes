@@ -111,3 +111,62 @@ export function TrackCard({ track }: { track?: TrackDetails }) {
         </div>
     )
 }
+
+
+export function OverflowTags({
+    tags,
+    containerWidth,
+    gap,
+    charWidth,
+    padding,
+    moreWidth
+}: {
+    tags: string[],
+    containerWidth: number,
+    gap: number,
+    charWidth: number,
+    padding: number,
+    moreWidth: number
+}) {
+    if (!tags || tags.length === 0) return null;
+
+    let width = 0;
+    let count = 0;
+
+    for (const tag of tags) {
+        const tagWidth = Math.min(tag.length * charWidth + padding, 120);
+        const isLast = count === tags.length - 1;
+        const widthWithMore = width + tagWidth + gap + moreWidth;
+        const widthJustTag = width + tagWidth;
+
+        if ((isLast && widthJustTag <= containerWidth) || (!isLast && widthWithMore <= containerWidth)) {
+            width += tagWidth + gap;
+            count++;
+        } else {
+            break;
+        }
+    }
+
+    if (count === 0 && tags.length > 0) count = 1;
+
+    const visible = tags.slice(0, count);
+    const hidden = tags.length - count;
+
+    return (
+        <div className="flex gap-1 overflow-hidden h-6">
+            {visible.map((tag) => (
+                <span
+                    key={tag}
+                    className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs whitespace-nowrap truncate max-w-[120px]"
+                >
+                    {tag}
+                </span>
+            ))}
+            {hidden > 0 && (
+                <span className="px-2 py-1 h-6 bg-muted text-muted-foreground rounded-full text-xs whitespace-nowrap">
+                    +{hidden}
+                </span>
+            )}
+        </div>
+    );
+};

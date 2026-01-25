@@ -51,6 +51,7 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
                     charWidth={7}
                     padding={16}
                     moreWidth={30}
+                    maxTagWidth={175}
                 />}
             </div>
             <Handle

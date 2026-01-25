@@ -119,14 +119,16 @@ export function OverflowTags({
     gap,
     charWidth,
     padding,
-    moreWidth
+    moreWidth,
+    maxTagWidth
 }: {
     tags: string[],
     containerWidth: number,
     gap: number,
     charWidth: number,
     padding: number,
-    moreWidth: number
+    moreWidth: number,
+    maxTagWidth: number
 }) {
     if (!tags || tags.length === 0) return null;
 
@@ -134,7 +136,7 @@ export function OverflowTags({
     let count = 0;
 
     for (const tag of tags) {
-        const tagWidth = Math.min(tag.length * charWidth + padding, 120);
+        const tagWidth = Math.min(tag.length * charWidth + padding, maxTagWidth);
         const isLast = count === tags.length - 1;
         const widthWithMore = width + tagWidth + gap + moreWidth;
         const widthJustTag = width + tagWidth;
@@ -157,7 +159,8 @@ export function OverflowTags({
             {visible.map((tag) => (
                 <span
                     key={tag}
-                    className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs whitespace-nowrap truncate max-w-[120px]"
+                    className="px-2 py-1 h-6 bg-primary/10 text-primary rounded-full text-xs whitespace-nowrap truncate"
+                    style={{ maxWidth: maxTagWidth }}
                 >
                     {tag}
                 </span>

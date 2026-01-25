@@ -1,16 +1,16 @@
-import { Info, History, Play, Network } from "lucide-react";
-import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { History, Play, Network } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 
-export function InfoDialog() {
+export function InfoDialog({
+    open,
+    onOpenChange
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void
+}) {
     return (
-        <Dialog>
-            <DialogTrigger>
-                <Button variant="ghost" size="icon">
-                    <Info />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>About Liner Notes</DialogTitle>

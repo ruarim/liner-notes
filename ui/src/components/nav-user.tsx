@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,10 +15,11 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from './ui/sidebar'
-import { LogOut, EllipsisVertical } from "lucide-react"
+import { LogOut, EllipsisVertical, Info } from "lucide-react"
 import { ToggleTheme } from './ui/toggle-theme'
 import { EqVisualizer } from './eq-visualizer'
 import { Toggle } from './ui/toggle'
+import { InfoDialog } from "./info-dialog"
 
 export function NavUser({
     isAnalyzing,
@@ -27,6 +29,7 @@ export function NavUser({
     setAnalyzing: (isAnalyzing: boolean) => void,
 }) {
     const { isMobile } = useSidebar()
+    const [showInfo, setShowInfo] = useState(false)
     const logout = () => {
         window.location.href = "/logout";
     }
@@ -58,6 +61,10 @@ export function NavUser({
                     >
                         <ToggleTheme />
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => setShowInfo(true)}>
+                            <Info />
+                            About
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={logout}>
                             <LogOut />
                             Log out
@@ -65,6 +72,7 @@ export function NavUser({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>
+            <InfoDialog open={showInfo} onOpenChange={setShowInfo} />
         </SidebarMenu>
     )
 }

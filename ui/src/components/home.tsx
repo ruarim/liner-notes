@@ -24,7 +24,6 @@ import { ResizableOverlay } from "./resizable-overlay";
 import { RelatedGraph } from "./related-graph";
 import { useWindowSize } from "../hooks/use-window-size";
 import { ReactFlowProvider } from "@xyflow/react";
-import { InfoDialog } from "./info-dialog";
 
 const SIDEBAR_WIDTH = 255;
 
@@ -66,15 +65,15 @@ export default function Home({
                 {/* Sidebar */}
                 <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
                     <_SidebarHeader />
-                    <_SidebarContent 
-                        tracks={history} 
-                        setSelectedItem={setSelectedItem} 
-                        index={index} 
+                    <_SidebarContent
+                        tracks={history}
+                        setSelectedItem={setSelectedItem}
+                        index={index}
                     />
                     <SidebarFooter className="bg-background">
-                        {isLoggedIn && <NavUser 
-                            isAnalyzing={isAnalyzing} 
-                            setAnalyzing={setAnalyzing} 
+                        {isLoggedIn && <NavUser
+                            isAnalyzing={isAnalyzing}
+                            setAnalyzing={setAnalyzing}
                         />}
                     </SidebarFooter>
                 </Sidebar>
@@ -87,7 +86,6 @@ export default function Home({
                         {!isLoggedIn
                             ? <PlatformLogin />
                             : <>
-                                <InfoDialog />
                                 <AnalyseRecent
                                     setHistory={setHistory}
                                     history={history}
@@ -130,8 +128,8 @@ export default function Home({
                         >
                             {selectedTrack
                                 ? <ReactFlowProvider>
-                                    <RelatedGraph 
-                                        track={selectedTrack} 
+                                    <RelatedGraph
+                                        track={selectedTrack}
                                         onNodeClick={findIndexAndSelect}
                                     />
                                 </ReactFlowProvider>

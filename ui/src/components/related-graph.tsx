@@ -79,8 +79,10 @@ export function RelatedGraph({
         let initialNodes: Node[] = [];
         let initialEdges: Edge[] = [];
 
+        const renderId = Math.random().toString(36).substring(2, 9);
+
         const selectedNode: Node = {
-            id: track.trackId,
+            id: `${renderId}-${track.trackId}`,
             type: 'track',
             position: { x: 0, y: 0 },
             data: {
@@ -92,7 +94,7 @@ export function RelatedGraph({
 
         if (relatedTracks.length > 0) {
             const relatedTrackNodes = relatedTracks.map((related) => ({
-                id: related.trackId,
+                id: `${renderId}-${related.trackId}`,
                 type: 'track',
                 position: { x: 0, y: 0 },
                 data: {
@@ -105,7 +107,7 @@ export function RelatedGraph({
             initialEdges = relatedTracks.map((related) => ({
                 id: `e-${selectedNode.id}-${related.trackId}`,
                 source: selectedNode.id,
-                target: related.trackId,
+                target: `${renderId}-${related.trackId}`,
                 type: ConnectionLineType.SmoothStep,
                 style: { stroke: '#b1b1b7', strokeWidth: 2 },
             }));
@@ -131,7 +133,7 @@ export function RelatedGraph({
         window.requestAnimationFrame(() => {
             fitView({ duration: 800, padding: 0.2 });
         });
-    }, [nodes, fitView]);
+    }, [track, nodes, fitView]);
 
     return (
         <ReactFlow

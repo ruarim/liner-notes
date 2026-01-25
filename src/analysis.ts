@@ -51,7 +51,7 @@ export async function generateContent(track: TrackDetails) {
 
 const schema = Output.object({
     schema: z.object({
-        // trackAnalysis: z.string().describe("Analysis of the track's release, critical reception, and production style."),
+        trackAnalysis: z.string().describe("Analysis of the track's release, critical reception, and production style."),
         albumAnalysis: z.string().describe("Analysis of the album's release, critical reception, and production style."),
         personnelAndPlaces: z.string().describe("Details on the people (producers, musicians) and places (studios, cities) involved."),
         artistBiography: z.string().describe("Biography focusing on where the artist was in their career during this specific era."),

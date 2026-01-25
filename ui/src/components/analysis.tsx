@@ -42,13 +42,13 @@ export default function Insights({
     )
 }
 
-const Section = ({ title, content }: { title: string; content: string }) => (
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="mb-6">
         <h3 className="text-primary font-bold text-lg border-b border-border pb-2 mb-3">
             {title}
         </h3>
         <p className="text-card-foreground text-sm leading-relaxed whitespace-pre-wrap">
-            {content}
+            {children}
         </p>
     </div>
 );
@@ -89,14 +89,12 @@ export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
     return (
         <div className="w-full h-full overflow-y-auto pr-2">
             <div className="space-y-2">
-                <Section title="The Album" content={data.albumAnalysis} />
-                <Section title="Personnel & Places" content={data.personnelAndPlaces} />
-                <Section title="The Artist" content={data.artistBiography} />
-                <Section title="The Context" content={data.culturalContext} />
-                <div className="mb-4">
-                    <h3 className="text-primary font-bold text-lg border-b border-border pb-2 mb-3">
-                        Where to Look Next
-                    </h3>
+                <Section title="The Track">{data.trackAnalysis}</Section>
+                <Section title="The Album">{data.albumAnalysis}</Section>
+                <Section title="Personnel & Places">{data.personnelAndPlaces}</Section>
+                <Section title="The Artist">{data.artistBiography}</Section>
+                <Section title="The Context">{data.culturalContext}</Section>
+                <Section title="Where to Look Next">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {recommendations && recommendations.map((item, index) => (
                             <div key={index} className="text-card-foreground text-sm leading-relaxed">
@@ -111,8 +109,7 @@ export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
                             </div>
                         ))}
                     </div>
-                </div>
-
+                </Section>
             </div>
         </div>
     );

@@ -53,7 +53,7 @@ export interface Recommendation {
 
 export interface AnalysisData {
     albumAnalysis: string;
-    // trackAnalysis: string;
+    trackAnalysis: string;
     personnelAndPlaces: string;
     artistBiography: string;
     culturalContext: string;

@@ -2,16 +2,17 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 
-import { SessionData, SpotifyTokenResponse, TrackDetails } from './types';
+import { SpotifyTokenResponse, TrackDetails } from './types';
 import * as Store from './store';
 import * as Spotify from './spotify';
 import * as Analysis from './analysis';
 import * as Events from "./events";
 import redisClient, { connectRedis } from './redis';
 import jwt from 'jsonwebtoken';
-import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH } from './consts';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH, defaultAnalysis } from './consts';
 import cookieParser from 'cookie-parser';
 import { AuthenticatedRequest, authenticateJWT } from './middleware';
+import { trackAnalysisFilled } from './utils';
 
 
 const app = express();
@@ -102,19 +103,26 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         return res.status(401).json({ error: 'Not logged in' });
     }
     try {
-        const track = await Spotify.getCurrentlyPlaying(user) 
+        const track = await Spotify.getCurrentlyPlaying(user)
         if (!track) return res.status(200).json(null)
-        const trackDetails: TrackDetails = {
+        let trackDetails: TrackDetails = {
             ...Spotify.convertSpotifyTrackToTrackDetails(track),
             loading: true,
         }
         await Store.pushHistory(user.spotifyId, trackDetails.trackId);
-        let cached = await Store.getCacheTrack(trackDetails.trackId);
-        if (cached) {
+        let cached = await Store.getTrack(trackDetails.trackId);
+
+        // Either have filled all the filed or are still waiting for the analysis to finish
+        if (cached && (trackAnalysisFilled(cached) || cached.loading)) {
             res.status(200).json(cached);
             return;
         }
-        await Store.updateCache(trackDetails.trackId, trackDetails);
+        // Still have some fields to fill and we are not waiting for the analysis to finish
+        if (cached && !(trackAnalysisFilled(cached) && !cached.loading)) {
+            trackDetails = { ...cached, loading: true};
+        }
+
+        await Store.updateTrack(trackDetails.trackId, trackDetails);
         Analysis.generateContent(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
@@ -146,22 +154,25 @@ app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: 
         const user = req.user;
         if (!user) return res.status(401).json({ error: 'Not logged in' });
         const trackId = req.query.trackId as string;
-        let track = await Store.getCacheTrack(trackId);
+        let track = await Store.getTrack(trackId);
         if (!track) {
             const spotifyTrack = await Spotify.getTrack(trackId, user);
             track = Spotify.convertSpotifyTrackToTrackDetails(spotifyTrack);
             await Store.pushHistory(user.spotifyId, track.trackId);
         }
-        if (track.analysis || track.loading) {
+
+        if (trackAnalysisFilled(track)) {
             res.status(200).json({ message: 'Analysis already completed' });
             return;
         }
+
         const updatedTrack = {
             ...track,
             loading: true,
-            error: undefined
+            error: undefined,
+            analysis: { ...defaultAnalysis, ...track.analysis },
         };
-        await Store.updateCache(track.trackId, updatedTrack);
+        await Store.updateTrack(track.trackId, updatedTrack);
         Events.analysis.emit(Events.analysisUpdate, updatedTrack);
         Analysis.generateContent(updatedTrack);
         res.status(200).json({ message: 'Analysis triggered' });

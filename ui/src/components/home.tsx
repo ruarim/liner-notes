@@ -109,12 +109,12 @@ export default function Home({
                                         <TrackCard track={selectedTrack} />
                                     </div>
                                     <div className="min-h-screen">
-                                        <Insights
-                                            analysis={selectedTrack?.analysis}
-                                            loading={selectedTrack?.loading}
-                                            error={selectedTrack?.error}
-                                            trackId={selectedTrack?.trackId}
-                                        />
+                                        {selectedTrack && <Insights
+                                            analysis={selectedTrack.analysis}
+                                            loading={selectedTrack.loading}
+                                            error={selectedTrack.error}
+                                            trackId={selectedTrack.trackId}
+                                        />}
                                     </div>
                                 </div>
                             </div>

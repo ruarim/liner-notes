@@ -40,7 +40,7 @@ export interface TrackDetails {
     album: string;
     releaseDate: string;
     image: string;
-    analysis?: AnalysisData;
+    analysis: AnalysisData;
     error?: string;
     loading: boolean;
 }
@@ -52,18 +52,18 @@ export interface Recommendation {
 }
 
 export interface AnalysisData {
-    albumAnalysis: string;
-    trackAnalysis: string;
-    personnelAndPlaces: string;
-    artistBiography: string;
-    culturalContext: string;
-    recommendations: {
+    albumAnalysis?: string;
+    trackAnalysis?: string;
+    personnelAndPlaces?: string;
+    artistBiography?: string;
+    culturalContext?: string;
+    recommendations?: {
         albums: Recommendation[];
         tracks: Recommendation[];
         books: Recommendation[];
         filmsAndTV: Recommendation[];
     };
-    tags: string[];
+    tags?: string[];
 }
 
 export interface SessionData {

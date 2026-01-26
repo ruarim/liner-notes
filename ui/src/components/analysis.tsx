@@ -10,7 +10,7 @@ export default function Insights({
     error,
     trackId
 }: {
-    analysis?: AnalysisData,
+    analysis: AnalysisData,
     loading?: boolean,
     error?: string,
     trackId?: string
@@ -18,14 +18,8 @@ export default function Insights({
     return (
         <div className={cn(
             "w-full h-full bg-card border border-border p-6 rounded-xl text-sm leading-relaxed text-card-foreground shadow-lg",
-            loading && 'flex items-center justify-center animate-pulse min-h-[500px] bg-muted/50'
         )}>
-            {analysis && <AnalysisView data={analysis} />}
-            {loading && (
-                <div className='opacity-50 flex flex-col items-center gap-2'>
-                    <>Researching Track...</>
-                </div>
-            )}
+            <AnalysisView data={analysis} />
             {!analysis && !loading && error && (
                 <div className='flex items-center justify-center min-h-[500px] text-muted-foreground'>
                     <div className='flex flex-col items-center gap-3'>
@@ -42,8 +36,8 @@ export default function Insights({
     )
 }
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="mb-6">
+const Section = ({ title, children }: { title: string; children: React.ReactNode; }) => (
+    <div className="mb-5">
         <h3 className="text-primary font-bold text-lg border-b border-border pb-2 mb-3">
             {title}
         </h3>
@@ -76,9 +70,7 @@ const getMediaIcon = (type: MediaType) => {
     }
 };
 
-export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
-    if (!data) return null;
-
+export const AnalysisView = ({ data }: { data: AnalysisData }) => {
     const recommendations: RecommendationWithType[] = [
         data?.recommendations?.albums?.map(i => ({ ...i, type: 'album' as MediaType })) || [],
         data?.recommendations?.tracks?.map(i => ({ ...i, type: 'track' as MediaType })) || [],
@@ -86,14 +78,42 @@ export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
         data?.recommendations?.filmsAndTV?.map(i => ({ ...i, type: 'filmAndTV' as MediaType })) || [],
     ].flat().filter((item) => !!item);
 
+    const LoadingSection = () => (
+        <div className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md" />
+    );
     return (
         <div className="w-full h-full overflow-y-auto pr-2">
             <div className="space-y-2">
-                <Section title="The Track">{data.trackAnalysis}</Section>
-                <Section title="The Album">{data.albumAnalysis}</Section>
-                <Section title="Personnel & Places">{data.personnelAndPlaces}</Section>
-                <Section title="The Artist">{data.artistBiography}</Section>
-                <Section title="The Context">{data.culturalContext}</Section>
+                <Section title="The Track">
+                    {data?.trackAnalysis 
+                        ? data.trackAnalysis 
+                        : <LoadingSection />
+                    }
+                </Section>
+                <Section title="The Album">
+                    {data?.albumAnalysis 
+                        ? data.albumAnalysis 
+                        : <LoadingSection />
+                    }
+                </Section>
+                <Section title="Personnel & Places">
+                    {data?.personnelAndPlaces 
+                        ? data.personnelAndPlaces 
+                        : <LoadingSection />
+                    }
+                </Section>
+                <Section title="The Artist">
+                    {data?.artistBiography 
+                        ? data.artistBiography 
+                        : <LoadingSection />
+                    }
+                </Section>
+                <Section title="The Context">
+                    {data?.culturalContext 
+                        ? data.culturalContext 
+                        : <LoadingSection />
+                    }
+                </Section>
                 <Section title="Where to Look Next">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {recommendations && recommendations.map((item, index) => (
@@ -108,6 +128,14 @@ export const AnalysisView = ({ data }: { data: AnalysisData; }) => {
                                 <p className="mt-1">{item.reasoning}</p>
                             </div>
                         ))}
+                        {!recommendations.length && (
+                            Array.from({ length: 3 }, (_, index) => (
+                                <div 
+                                    key={index} 
+                                    className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md" 
+                                />
+                            ))
+                        )}
                     </div>
                 </Section>
             </div>

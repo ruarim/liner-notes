@@ -1,6 +1,6 @@
 import axios from "axios";
 import { SpotifyNowPlayingResponse, SpotifyTrack, TrackDetails, SessionData, SpotifyTokenResponse, SpotifyUser } from "./types";
-import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from "./consts";
+import { defaultAnalysis, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from "./consts";
 
 export const getRefreshedAccessToken = async (refreshToken: string): Promise<SpotifyTokenResponse> => {
     const params = new URLSearchParams({
@@ -87,6 +87,7 @@ export const convertSpotifyTrackToTrackDetails = (track: SpotifyTrack): TrackDet
         image: track.album.images[0].url,
         releaseDate: track.album.release_date,
         loading: false,
+        analysis: defaultAnalysis,
     };
 }
 

@@ -11,7 +11,7 @@ on:
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
-  SERVICE_NAME: liner-notes
+  SERVICE_NAME: ${{ github.ref == 'refs/heads/main' && 'liner-notes' || 'liner-notes-dev' }}
 
 jobs:
   deploy:

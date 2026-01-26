@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { AnalysisData, TrackDetails } from "./types";
 import * as Store from "./store";
 import * as Events from "./events";
+import { defaultAnalysis } from "./consts";
 
 const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
 
@@ -38,8 +39,6 @@ const ANALYSIS_SHAPE = {
     }),
     tags: z.array(z.string()).describe("Tags describing the song, album, artist, and cultural context."),
 };
-
-// add a failed to each field so we dont get stuck in a loop?
 
 export async function generateContent(track: TrackDetails) {
     console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
@@ -80,7 +79,7 @@ const handleGenerateResearch = async (track: TrackDetails) => {
     // conditionally create the schema for the model to fill in.
     const keysToFill = Object
         .keys(ANALYSIS_SHAPE)
-        .filter((key) => !analysis[key as keyof AnalysisData]);
+        .filter((key) => !valueIsFilled(analysis?.[key as keyof AnalysisData]));
 
     if (keysToFill.length === 0) {
         return {};
@@ -106,3 +105,21 @@ const handleGenerateResearch = async (track: TrackDetails) => {
     
     return { ...analysis, ...output };
 } 
+
+export const trackAnalysisFilled = (track: TrackDetails) => {
+    return Object
+        .entries(defaultAnalysis)
+        .every(([key]) => valueIsFilled(track.analysis?.[key as keyof typeof defaultAnalysis]));
+};
+
+export const valueIsFilled = (value: any) => {
+    if (Array.isArray(value)) {
+        return value.length > 0;
+    }
+
+    if (typeof value === 'object' && value !== null) {
+        return true;
+    }
+
+    return value !== undefined && value !== null && value !== '';
+};

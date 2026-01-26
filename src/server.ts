@@ -12,7 +12,6 @@ import jwt from 'jsonwebtoken';
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH, defaultAnalysis } from './consts';
 import cookieParser from 'cookie-parser';
 import { AuthenticatedRequest, authenticateJWT } from './middleware';
-import { trackAnalysisFilled } from './utils';
 
 
 const app = express();
@@ -113,12 +112,12 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         let cached = await Store.getTrack(trackDetails.trackId);
 
         // Either have filled all the filed or are still waiting for the analysis to finish
-        if (cached && (trackAnalysisFilled(cached) || cached.loading)) {
+        if (cached && (Analysis.trackAnalysisFilled(cached) || cached.loading)) {
             res.status(200).json(cached);
             return;
         }
         // Still have some fields to fill and we are not waiting for the analysis to finish
-        if (cached && !(trackAnalysisFilled(cached) && !cached.loading)) {
+        if (cached && !(Analysis.trackAnalysisFilled(cached) && !cached.loading)) {
             trackDetails = { ...cached, loading: true};
         }
 
@@ -161,7 +160,7 @@ app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: 
             await Store.pushHistory(user.spotifyId, track.trackId);
         }
 
-        if (trackAnalysisFilled(track)) {
+        if (Analysis.trackAnalysisFilled(track)) {
             res.status(200).json({ message: 'Analysis already completed' });
             return;
         }

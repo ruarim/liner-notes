@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { TrackDetails } from "../../../src/types";
-import Insights from "./analysis";
+import { AnalysisCard } from "./analysis";
 import {
     SidebarProvider,
     Sidebar,
@@ -19,7 +19,7 @@ import PlatformLogin from "./platform-connect";
 import { NavUser } from "./nav-user";
 import { Button } from "./ui/button";
 import AnalyseRecent from "./analyse-recent";
-import { TrackItem, TrackCard } from "./track";
+import { TrackItem, TrackCard, TrackError } from "./track";
 import { ResizableOverlay } from "./resizable-overlay";
 import { RelatedGraph } from "./related-graph";
 import { useWindowSize } from "../hooks/use-window-size";
@@ -105,16 +105,14 @@ export default function Home({
                         <div className="absolute inset-0 overflow-auto p-6 bg-background">
                             <div className="max-w-6xl mx-auto">
                                 <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                                    <div className="lg:sticky lg:top-0 lg:self-start">
+                                    <div className="lg:sticky lg:top-0 lg:self-start space-y-2">
                                         <TrackCard track={selectedTrack} />
+                                        <TrackError track={selectedTrack} />
                                     </div>
                                     <div className="min-h-screen">
-                                        {selectedTrack && <Insights
-                                            analysis={selectedTrack.analysis}
-                                            loading={selectedTrack.loading}
-                                            error={selectedTrack.error}
-                                            trackId={selectedTrack.trackId}
-                                        />}
+                                        {selectedTrack && (
+                                            <AnalysisCard analysis={selectedTrack.analysis} />
+                                        )}
                                     </div>
                                 </div>
                             </div>

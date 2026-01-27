@@ -1,37 +1,81 @@
 import type { AnalysisData } from '../../../src/types';
 import { cn } from '../lib/utils';
 import { Disc3, Music, BookOpen, Film } from 'lucide-react'
-import { Button } from './ui/button';
-import * as Api from '../lib/api';
 
-export default function Insights({
+export function AnalysisCard({
     analysis,
-    loading,
-    error,
-    trackId
 }: {
     analysis: AnalysisData,
-    loading?: boolean,
-    error?: string,
-    trackId?: string
 }) {
+    const recommendations: RecommendationWithType[] = [
+        analysis?.recommendations?.albums?.map(i => ({ ...i, type: 'album' as MediaType })) || [],
+        analysis?.recommendations?.tracks?.map(i => ({ ...i, type: 'track' as MediaType })) || [],
+        analysis?.recommendations?.books?.map(i => ({ ...i, type: 'book' as MediaType })) || [],
+        analysis?.recommendations?.filmsAndTV?.map(i => ({ ...i, type: 'filmAndTV' as MediaType })) || [],
+    ].flat().filter((item) => !!item);
+
     return (
         <div className={cn(
             "w-full h-full bg-card border border-border p-6 rounded-xl text-sm leading-relaxed text-card-foreground shadow-lg",
         )}>
-            <AnalysisView data={analysis} />
-            {!analysis && !loading && error && (
-                <div className='flex items-center justify-center min-h-[500px] text-muted-foreground'>
-                    <div className='flex flex-col items-center gap-3'>
-                        <p>{error}</p>
-                        {trackId && (
-                            <Button onClick={() => Api.analyseTrack(trackId)}>
-                                Try Again
-                            </Button>
-                        )}
-                    </div>
+            <div className="w-full h-full overflow-y-auto pr-2">
+                <div className="space-y-2">
+                    <Section title="The Track">
+                        {analysis?.trackAnalysis
+                            ? analysis.trackAnalysis
+                            : <LoadingSection />
+                        }
+                    </Section>
+                    <Section title="The Album">
+                        {analysis?.albumAnalysis
+                            ? analysis.albumAnalysis
+                            : <LoadingSection />
+                        }
+                    </Section>
+                    <Section title="Personnel & Places">
+                        {analysis?.personnelAndPlaces
+                            ? analysis.personnelAndPlaces
+                            : <LoadingSection />
+                        }
+                    </Section>
+                    <Section title="The Artist">
+                        {analysis?.artistBiography
+                            ? analysis.artistBiography
+                            : <LoadingSection />
+                        }
+                    </Section>
+                    <Section title="The Context">
+                        {analysis?.culturalContext
+                            ? analysis.culturalContext
+                            : <LoadingSection />
+                        }
+                    </Section>
+                    <Section title="Where to Look Next">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {recommendations && recommendations.map((item, index) => (
+                                <div key={index} className="text-card-foreground text-sm leading-relaxed">
+                                    <div className="flex items-center gap-2">
+                                        {getMediaIcon(item.type)}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold line-clamp-2" title={item.name}>{item.name}</p>
+                                            <p className="text-muted-foreground text-xs line-clamp-2" title={item.creator}>{item.creator}</p>
+                                        </div>
+                                    </div>
+                                    <p className="mt-1">{item.reasoning}</p>
+                                </div>
+                            ))}
+                            {!recommendations.length && (
+                                Array.from({ length: 3 }, (_, index) => (
+                                    <div
+                                        key={index}
+                                        className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md"
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </Section>
                 </div>
-            )}
+            </div>
         </div>
     )
 }
@@ -45,6 +89,10 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
             {children}
         </p>
     </div>
+);
+
+const LoadingSection = () => (
+    <div className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md" />
 );
 
 type MediaType = 'album' | 'track' | 'book' | 'filmAndTV';
@@ -68,77 +116,4 @@ const getMediaIcon = (type: MediaType) => {
         case 'filmAndTV':
             return <Film size={iconSize} className="text-primary flex-shrink-0" />;
     }
-};
-
-export const AnalysisView = ({ data }: { data: AnalysisData }) => {
-    const recommendations: RecommendationWithType[] = [
-        data?.recommendations?.albums?.map(i => ({ ...i, type: 'album' as MediaType })) || [],
-        data?.recommendations?.tracks?.map(i => ({ ...i, type: 'track' as MediaType })) || [],
-        data?.recommendations?.books?.map(i => ({ ...i, type: 'book' as MediaType })) || [],
-        data?.recommendations?.filmsAndTV?.map(i => ({ ...i, type: 'filmAndTV' as MediaType })) || [],
-    ].flat().filter((item) => !!item);
-
-    const LoadingSection = () => (
-        <div className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md" />
-    );
-    return (
-        <div className="w-full h-full overflow-y-auto pr-2">
-            <div className="space-y-2">
-                <Section title="The Track">
-                    {data?.trackAnalysis 
-                        ? data.trackAnalysis 
-                        : <LoadingSection />
-                    }
-                </Section>
-                <Section title="The Album">
-                    {data?.albumAnalysis 
-                        ? data.albumAnalysis 
-                        : <LoadingSection />
-                    }
-                </Section>
-                <Section title="Personnel & Places">
-                    {data?.personnelAndPlaces 
-                        ? data.personnelAndPlaces 
-                        : <LoadingSection />
-                    }
-                </Section>
-                <Section title="The Artist">
-                    {data?.artistBiography 
-                        ? data.artistBiography 
-                        : <LoadingSection />
-                    }
-                </Section>
-                <Section title="The Context">
-                    {data?.culturalContext 
-                        ? data.culturalContext 
-                        : <LoadingSection />
-                    }
-                </Section>
-                <Section title="Where to Look Next">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {recommendations && recommendations.map((item, index) => (
-                            <div key={index} className="text-card-foreground text-sm leading-relaxed">
-                                <div className="flex items-center gap-2">
-                                    {getMediaIcon(item.type)}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-bold line-clamp-2" title={item.name}>{item.name}</p>
-                                        <p className="text-muted-foreground text-xs line-clamp-2" title={item.creator}>{item.creator}</p>
-                                    </div>
-                                </div>
-                                <p className="mt-1">{item.reasoning}</p>
-                            </div>
-                        ))}
-                        {!recommendations.length && (
-                            Array.from({ length: 3 }, (_, index) => (
-                                <div 
-                                    key={index} 
-                                    className="opacity-50 flex flex-col items-center h-[140px] bg-muted/50 animate-pulse rounded-md" 
-                                />
-                            ))
-                        )}
-                    </div>
-                </Section>
-            </div>
-        </div>
-    );
 };

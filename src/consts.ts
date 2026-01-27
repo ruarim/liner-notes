@@ -16,11 +16,6 @@ export const defaultAnalysis: AnalysisData = {
     personnelAndPlaces: undefined,
     artistBiography: undefined,
     culturalContext: undefined,
-    recommendations: {
-        albums: [],
-        tracks: [],
-        books: [],
-        filmsAndTV: [],
-    },
+    recommendations: undefined,
     tags: [],
 }

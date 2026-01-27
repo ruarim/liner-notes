@@ -58,7 +58,7 @@ Before you begin, ensure you have the following:
    ```env
    SPOTIFY_CLIENT_ID=your_spotify_client_id
    SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-   REDIRECT_URI=http://localhost:8080/callback
+   DOMAIN={ngrok https tunnel domain}
    GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
    REDIS_URL=redis://localhost:6379
    JWT_SECRET=your_random_jwt_secret

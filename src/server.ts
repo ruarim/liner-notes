@@ -193,9 +193,14 @@ app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
 app.get('/api/related-tracks', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
+        const limit = req.query.limit as string ?? 5;
         if (!user) return res.status(401).json({ error: 'Not logged in' });
         const trackId = req.query.trackId as string;
-        const relatedTracks = await Store.getRelatedTracks(trackId, user.spotifyId);
+        const relatedTracks = await Store.getRelatedTracks(
+            trackId,
+            user.spotifyId,
+            parseInt(limit)
+        );
         res.json(relatedTracks);
     } catch (error: any) {
         console.error('Error during related tracks', error?.message);

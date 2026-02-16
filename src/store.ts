@@ -60,6 +60,7 @@ const findTracksWithCommonTags = (track: TrackDetails, tracks: TrackDetails[]) =
     const targetTags = track?.analysis?.tags ?? [];
     const commonTracks = tracks.reduce<TrackDetails[]>((prev, curr) => {
         if (curr.trackId === track.trackId) return prev;
+        if (prev.some(t => t.trackId === curr.trackId)) return prev;
         if (curr.analysis?.tags?.length === 0) return prev;
         if (curr.analysis?.tags?.some(tag => targetTags.includes(tag))) {
             return [...prev, curr];

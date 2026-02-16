@@ -108,12 +108,12 @@ const getMediaIcon = (type: MediaType) => {
     const iconSize = 28;
     switch (type) {
         case 'album':
-            return <Disc3 size={iconSize} className="text-primary flex-shrink-0" />;
+            return <Disc3 size={iconSize} className="text-primary shrink-0" />;
         case 'track':
-            return <Music size={iconSize} className="text-primary flex-shrink-0" />;
+            return <Music size={iconSize} className="text-primary shrink-0" />;
         case 'book':
-            return <BookOpen size={iconSize} className="text-primary flex-shrink-0" />;
+            return <BookOpen size={iconSize} className="text-primary shrink-0" />;
         case 'filmAndTV':
-            return <Film size={iconSize} className="text-primary flex-shrink-0" />;
+            return <Film size={iconSize} className="text-primary shrink-0" />;
     }
 };

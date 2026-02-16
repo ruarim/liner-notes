@@ -6,7 +6,7 @@ import * as Api from "../lib/api"
 
 export function TrackItem({ track, selected }: { track: TrackDetails, selected: boolean }) {
     return <>
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
             {track.image ? (
                 <img
                     src={track.image}
@@ -53,7 +53,7 @@ export function TrackItem({ track, selected }: { track: TrackDetails, selected: 
 
 export function TrackItemSkeleton() {
     return (
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 48 48"

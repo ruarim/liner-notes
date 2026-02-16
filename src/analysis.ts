@@ -40,11 +40,10 @@ const ANALYSIS_SHAPE = {
     tags: z.array(z.string()).describe("Tags describing the song, album, artist, and cultural context."),
 };
 
-export async function generateContent(track: TrackDetails) {
-    console.log(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
-
+export async function runAnalysis(track: TrackDetails) {
     try {
-        const analysis: AnalysisData = await handleGenerateResearch(track);
+        console.info(`Starting research for ${track.name} - ${track.album} - ${track.artist}`)
+        const analysis: AnalysisData = await generateResearch(track);
         const updatedTrack: TrackDetails = {
             ...track,
             loading: false,
@@ -52,7 +51,7 @@ export async function generateContent(track: TrackDetails) {
         }
         Store.updateTrack(track.trackId, updatedTrack)
         Events.analysis.emit(Events.analysisUpdate, updatedTrack);
-        console.log(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
+        console.info(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
     } catch (error) {
         console.error(`Analysis error for ${track.trackId}:`, error);
         const updatedTrack: TrackDetails = {
@@ -66,7 +65,7 @@ export async function generateContent(track: TrackDetails) {
 }
 
 // this function will generate text for fields that are not filled
-const handleGenerateResearch = async (track: TrackDetails) => {
+const generateResearch = async (track: TrackDetails) => {
     const analysis: AnalysisData = track.analysis || {};
     const prompt =
         "You are an expert musicologist and cultural historian. \n" +
@@ -102,9 +101,8 @@ const handleGenerateResearch = async (track: TrackDetails) => {
         stopWhen: stepCountIs(3),
         prompt,
     });
-    
     return { ...analysis, ...output };
-} 
+}
 
 export const trackAnalysisFilled = (track: TrackDetails) => {
     return Object

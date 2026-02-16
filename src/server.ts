@@ -118,11 +118,11 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         }
         // Still have some fields to fill and we are not waiting for the analysis to finish
         if (cached && !(Analysis.trackAnalysisFilled(cached) && !cached.loading)) {
-            trackDetails = { ...cached, loading: true};
+            trackDetails = { ...cached, loading: true };
         }
 
         await Store.updateTrack(trackDetails.trackId, trackDetails);
-        Analysis.generateContent(trackDetails);
+        Analysis.runAnalysis(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
         console.error('Error during now playing', error);
@@ -173,7 +173,7 @@ app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: 
         };
         await Store.updateTrack(track.trackId, updatedTrack);
         Events.analysis.emit(Events.analysisUpdate, updatedTrack);
-        Analysis.generateContent(updatedTrack);
+        Analysis.runAnalysis(updatedTrack);
         res.status(200).json({ message: 'Analysis triggered' });
     } catch (error: any) {
         console.error('Error during analyse', error?.message);

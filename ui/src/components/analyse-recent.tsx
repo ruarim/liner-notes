@@ -7,10 +7,10 @@ import * as Api from "../lib/api";
 import { useState } from "react";
 
 export default function AnalyseRecent({
-    setHistory,
+    handleAnalyseTrack,
     history,
 }: {
-    setHistory: React.Dispatch<React.SetStateAction<Array<TrackDetails>>>
+    handleAnalyseTrack: (track: TrackDetails) => void
     history: Array<TrackDetails>
 }) {
     const [loading, setLoading] = useState(false);
@@ -29,13 +29,6 @@ export default function AnalyseRecent({
         }
     }
 
-    const handleAnalyseTrack = (track: TrackDetails) => {
-        setHistory((prev) => [
-            { ...track, loading: true },
-            ...prev
-        ]);
-        Api.analyseTrack(track.trackId)
-    }
 
     return (
         <DropdownMenu onOpenChange={(open) => {

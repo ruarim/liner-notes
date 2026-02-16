@@ -105,24 +105,8 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         const track = await Spotify.getCurrentlyPlaying(user)
         if (!track) return res.status(200).json(null)
         let trackDetails: TrackDetails = {
-            ...Spotify.convertSpotifyTrackToTrackDetails(track),
-            loading: true,
+            ...Spotify.convertSpotifyTrackToTrackDetails(track)
         }
-        await Store.pushHistory(user.spotifyId, trackDetails.trackId);
-        let cached = await Store.getTrack(trackDetails.trackId);
-
-        // Either have filled all the filed or are still waiting for the analysis to finish
-        if (cached && (Analysis.trackAnalysisFilled(cached) || cached.loading)) {
-            res.status(200).json(cached);
-            return;
-        }
-        // Still have some fields to fill and we are not waiting for the analysis to finish
-        if (cached && !(Analysis.trackAnalysisFilled(cached) && !cached.loading)) {
-            trackDetails = { ...cached, loading: true };
-        }
-
-        await Store.updateTrack(trackDetails.trackId, trackDetails);
-        Analysis.runAnalysis(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
         console.error('Error during now playing', error);
@@ -148,7 +132,7 @@ app.get('/api/recently-played', authenticateJWT, async (req: AuthenticatedReques
     }
 })
 
-app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) return res.status(401).json({ error: 'Not logged in' });
@@ -159,12 +143,10 @@ app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: 
             track = Spotify.convertSpotifyTrackToTrackDetails(spotifyTrack);
             await Store.pushHistory(user.spotifyId, track.trackId);
         }
-
         if (Analysis.trackAnalysisFilled(track)) {
             res.status(200).json({ message: 'Analysis already completed' });
             return;
         }
-
         const updatedTrack = {
             ...track,
             loading: true,

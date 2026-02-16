@@ -15,19 +15,12 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from './ui/sidebar'
-import { LogOut, EllipsisVertical, Info } from "lucide-react"
+import { LogOut, EllipsisVertical, Info, Sparkles } from "lucide-react"
 import { ToggleTheme } from './ui/toggle-theme'
-import { EqVisualizer } from './eq-visualizer'
-import { Toggle } from './ui/toggle'
+import { Button } from './ui/button'
 import { InfoDialog } from "./info-dialog"
 
-export function NavUser({
-    isAnalyzing,
-    setAnalyzing,
-}: {
-    isAnalyzing: boolean,
-    setAnalyzing: (isAnalyzing: boolean) => void,
-}) {
+export function NavUser({ analyseNowPlaying }: { analyseNowPlaying: () => void }) {
     const { isMobile } = useSidebar()
     const [showInfo, setShowInfo] = useState(false)
     const logout = () => {
@@ -36,19 +29,19 @@ export function NavUser({
     return (
         <SidebarMenu>
             <SidebarMenuItem className="flex items-center justify-between gap-1 h-10">
-                <Toggle
-                    className="border border h-10 gap-3 flex grow justify-start"
-                    onPressedChange={setAnalyzing}
-                    pressed={isAnalyzing}
+                <Button
+                    className="border h-10 gap-3 flex grow justify-start" 
+                    onClick={analyseNowPlaying}
+                    variant="outline"
                 >
-                    <EqVisualizer isPlaying={isAnalyzing} className="w-6 h-6" barCount={4} />
+                    <Sparkles className="w-6 h-6" />
                     <span>Analyse now playing</span>
-                </Toggle>
+                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="sm"
-                            className="w-8 h-10 border border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-accent hover:text-sidebar-accent-foreground"
+                            className="w-8 h-10 border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-accent hover:text-sidebar-accent-foreground"
                         >
                             <EllipsisVertical className="ml-auto size-4" />
                         </SidebarMenuButton>

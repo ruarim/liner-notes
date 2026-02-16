@@ -4,14 +4,15 @@ A powerful web application that enhances your music listening experience by prov
 
 ## 🚀 Features
 
-- **Real-time Spotify Integration**: Connects to your Spotify account to monitor your "Now Playing" status.
-- **AI-Powered Deep Research**: Uses Google Gemini and AI-integrated Google Search to analyze:
+- **Real-time Spotify Integration**: Connects to the users Spotify account to analyse their library.
+- **AI-Powered Deep Research**: Uses Google Gemini and AI-integrated Google Search to analyse:
   - **Album Context**: Critical reception, production style, and release history.
   - **Personnel & Places**: Details on producers, musicians, and studios.
   - **Artist Biography**: Focused on the artist's career during the specific era of the song.
   - **Cultural Context**: Explores the musical scene, genre movements, and cultural climate.
 - **Curated Recommendations**: Get actionable suggestions for related albums, tracks, books, films, and TV shows.
-- **Track History**: Keeps a record of previously analyzed songs for easy reference.
+- **Track History**: Keeps a record of previously analysed songs for easy reference.
+- **Graph View**: Graph representation of realted tracks via intersection of tags.
 - **Real-time Updates**: Uses Server-Sent Events (SSE) to stream analysis results as they are generated.
 
 ## 🛠 Tech Stack

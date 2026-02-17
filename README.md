@@ -1,4 +1,4 @@
-# Music Research Tool
+# Liner Notes
 
 A powerful web application that enhances your music listening experience by providing deep musicological and cultural context for your currently playing Spotify tracks, powered by Google's Gemini AI.
 
@@ -42,7 +42,7 @@ Before you begin, ensure you have the following:
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd music-research-tool
+   cd liner-notes
    ```
 
 2. **Install dependencies**:

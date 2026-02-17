@@ -5,6 +5,7 @@ export interface SpotifyImage {
 }
 
 export interface SpotifyArtist {
+    id: string;
     name: string;
 }
 
@@ -13,6 +14,7 @@ export interface SpotifyTrack {
     name: string;
     artists: SpotifyArtist[];
     album: {
+        id: string;
         name: string;
         images: SpotifyImage[];
         release_date: string;
@@ -35,6 +37,8 @@ export interface SpotifyTokenResponse {
 
 export interface TrackDetails {
     trackId: string;
+    albumId: string;
+    artistId: string;
     name: string;
     artist: string;
     album: string;
@@ -52,11 +56,15 @@ export interface Recommendation {
 }
 
 export interface AnalysisData {
-    albumAnalysis?: string;
-    trackAnalysis?: string;
+    track?: TrackAnalysis,
+    album?: AlbumAnalysis,
+    artist?: ArtistAnalysis,
+    // video / images / audio
+}
+
+export interface TrackAnalysis {
     personnelAndPlaces?: string;
-    artistBiography?: string;
-    culturalContext?: string;
+    analysis?: string;
     recommendations?: {
         albums: Recommendation[];
         tracks: Recommendation[];
@@ -66,12 +74,21 @@ export interface AnalysisData {
     tags?: string[];
 }
 
+export interface AlbumAnalysis {
+    analysis?: string;
+    culturalContext?: string;
+}
+
+export interface ArtistAnalysis {
+    biography?: string;
+}
+
 export interface SessionData {
     accessToken: string;
     refreshToken: string;
     expiresAt: number;
     spotifyId: string;
-} 
+}
 
 export interface SpotifyUser {
     id: string;

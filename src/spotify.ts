@@ -81,6 +81,8 @@ export const getRecentlyPlayed = async (session: Omit<SessionData, 'spotifyId'>)
 export const convertSpotifyTrackToTrackDetails = (track: SpotifyTrack): TrackDetails => {
     return {
         trackId: track.id,
+        albumId: track.album.id,
+        artistId: track.artists[0].id,
         name: track.name,
         artist: track.artists.map((artist) => artist.name).join(', '),
         album: track.album.name,

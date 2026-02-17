@@ -1,21 +1,52 @@
 import redisClient from "./redis";
-import { TrackDetails } from "./types";
+import { TrackDetails, AlbumAnalysis, TrackAnalysis, ArtistAnalysis } from "./types";
 
 const TRACK_KEY_PREFIX = "track:";
 const HISTORY_KEY_PREFIX = "history:";
+const ANALYSIS_KEY_PREFIX = "analysis:";
 
 const getUserHistoryKey = (userId: string) => `${HISTORY_KEY_PREFIX}${userId}`;
 const getTrackKey = (trackId: string) => `${TRACK_KEY_PREFIX}${trackId}`;
-// 
+const getArtistAnalysisKey = (artistId: string) => `${ANALYSIS_KEY_PREFIX}${artistId}`;
+const getAlbumAnalysisKey = (albumId: string) => `${ANALYSIS_KEY_PREFIX}${albumId}`;
+const getTrackAnalysisKey = (trackId: string) => `${ANALYSIS_KEY_PREFIX}${trackId}`;
 
-export const updateTrack = async (trackId: string, trackDetails: TrackDetails) => {
-    // handle the different fields 
-    await redisClient.set(getTrackKey(trackId), JSON.stringify(trackDetails));
+export const updateJSON = async <T>(key: string, data: T) => {
+    await redisClient.set(key, JSON.stringify(data));
 };
 
-export const getTrack = async (trackId: string): Promise<TrackDetails | null> => {
-    const data = await redisClient.get(getTrackKey(trackId));
-    return data ? JSON.parse(data) : null;
+export const getJSON = async <T>(key: string): Promise<T | undefined> => {
+    const data = await redisClient.get(key);
+    return data ? JSON.parse(data) : undefined;
+};
+
+export const updateTrack = async (trackId: string, trackDetails: TrackDetails) => {
+    await updateJSON(getTrackKey(trackId), trackDetails);
+    
+    const analysis = trackDetails.analysis;
+    if (analysis?.track) {
+        await updateJSON(getTrackAnalysisKey(trackId), analysis.track);
+    }
+    if (analysis?.album) {
+        await updateJSON(getAlbumAnalysisKey(trackDetails.albumId), analysis.album);
+    }
+    if (analysis?.artist) {
+        await updateJSON(getArtistAnalysisKey(trackDetails.artistId), analysis.artist);
+    }
+};
+
+export const getTrack = async (trackId: string): Promise<TrackDetails | undefined> => {
+    const track = await getJSON<TrackDetails>(getTrackKey(trackId));
+    if(!track) return undefined;
+    const analysis = {
+        album: await getJSON<AlbumAnalysis>(getAlbumAnalysisKey(track.albumId)),
+        track: await getJSON<TrackAnalysis>(getTrackAnalysisKey(track.trackId)),
+        artist: await getJSON<ArtistAnalysis>(getArtistAnalysisKey(track.artistId)),
+    }
+    return {
+        ...track,
+        analysis
+    };
 };
 
 export const pushHistory = async (userId: string, trackId: string) => {
@@ -57,19 +88,20 @@ export const getRelatedTracks = async (trackId: string, userId: string, count = 
 };
 
 const findTracksWithCommonTags = (track: TrackDetails, tracks: TrackDetails[]) => {
-    const targetTags = track?.analysis?.tags ?? [];
+    const targetTags = track?.analysis?.track?.tags ?? [];
     const commonTracks = tracks.reduce<TrackDetails[]>((prev, curr) => {
+        const currTags = curr?.analysis?.track?.tags ?? [];
         if (curr.trackId === track.trackId) return prev;
         if (prev.some(t => t.trackId === curr.trackId)) return prev;
-        if (curr.analysis?.tags?.length === 0) return prev;
-        if (curr.analysis?.tags?.some(tag => targetTags.includes(tag))) {
+        if (currTags.length === 0) return prev;
+        if (currTags.some(tag => targetTags.includes(tag))) {
             return [...prev, curr];
         }
         return prev;
     }, []);
 
     const countTagsInCommon = (track: TrackDetails) => {
-        const tags = track.analysis?.tags ?? [];
+        const tags = track.analysis?.track?.tags ?? [];
         return targetTags.filter(tag => tags.includes(tag)).length;
     };
     return commonTracks.sort((a, b) => {

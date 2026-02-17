@@ -83,7 +83,7 @@ export function TrackCard({ track }: { track?: TrackDetails }) {
                     viewBox="0 0 300 300"
                     className="w-full rounded-lg shadow-md mb-4"
                 >
-                    <rect width="300" height="300" className="fill-muted" />
+                    <rect width="300" height="300" className="fill-muted opacity-50" />
                 </svg>
             )}
             <div className="space-y-2 text-center">

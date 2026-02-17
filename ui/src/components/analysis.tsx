@@ -5,7 +5,7 @@ import { Disc3, Music, BookOpen, Film } from 'lucide-react'
 export function AnalysisCard({
     analysis,
 }: {
-    analysis: AnalysisData,
+    analysis?: AnalysisData,
 }) {
     const recommendations: RecommendationWithType[] = [
         analysis?.recommendations?.albums?.map(i => ({ ...i, type: 'album' as MediaType })) || [],

@@ -124,9 +124,7 @@ export default function Home({
                                         <TrackError track={selectedTrack} />
                                     </div>
                                     <div className="min-h-screen">
-                                        {selectedTrack && (
-                                            <AnalysisCard analysis={selectedTrack.analysis} />
-                                        )}
+                                        <AnalysisCard analysis={selectedTrack?.analysis} />
                                     </div>
                                 </div>
                             </div>

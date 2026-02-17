@@ -1,6 +1,6 @@
 # Liner Notes
 
-<img width="1798" height="1039" alt="liner-notes" src="https://github.com/user-attachments/assets/f5ce3813-4d99-4aef-bee3-93ca21b5a3a7" />
+<img width="1800" height="1039" alt="Screenshot 2026-02-17 at 15 56 21" src="https://github.com/user-attachments/assets/e8c72573-ba2e-4ae6-81cb-45f23c0ecf39" />
 
 A powerful web application that enhances your music listening experience by providing deep musicological and cultural context for your currently playing Spotify tracks, powered by Google's Gemini AI.
 

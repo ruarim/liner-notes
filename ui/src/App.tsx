@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import type { TrackDetails } from '../../src/types';
 import Home from './components/home';
@@ -8,32 +8,6 @@ import { ThemeProvider } from 'next-themes';
 function App() {
   const [history, setHistory] = useState<TrackDetails[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const pollCurrentlyPlaying = async () => {
-    try {
-      const track = await Api.getCurrentTrack()
-      if (track === null) return
-      setHistory((prev) => {
-        if (prev.length === 0) {
-          return [track];
-        }
-        const firstTrack = prev[0];
-        if (track.trackId !== firstTrack.trackId) {
-          return [track, ...prev];
-        }
-        return prev;
-      });
-    } catch (error) {
-      console.error("Polling error", error);
-      // If we get a 401/404, we're not logged in
-      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 404)) {
-        setIsLoggedIn(false);
-      }
-    }
-  };
 
   const fetchHistory = async () => {
     try {
@@ -51,18 +25,6 @@ function App() {
   }
 
   useEffect(() => { fetchHistory() }, []);
-  useEffect(() => {
-    const runAnalysis = async () => {
-      if (!isAnalyzing || !isLoggedIn) return
-      pollCurrentlyPlaying()
-      pollInterval.current = setInterval(pollCurrentlyPlaying, 5000);
-    }
-    runAnalysis();
-    return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
-    };
-  }, [isAnalyzing, isLoggedIn]);
-
   useEffect(() => {
     if (!isLoggedIn) return
     const eventSource = new EventSource(Api.eventsURL);
@@ -92,8 +54,6 @@ function App() {
     >
       <Home
         history={history}
-        isAnalyzing={isAnalyzing}
-        setAnalyzing={setIsAnalyzing}
         isLoggedIn={isLoggedIn}
         setHistory={setHistory}
       />

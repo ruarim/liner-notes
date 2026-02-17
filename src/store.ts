@@ -6,12 +6,14 @@ const HISTORY_KEY_PREFIX = "history:";
 
 const getUserHistoryKey = (userId: string) => `${HISTORY_KEY_PREFIX}${userId}`;
 const getTrackKey = (trackId: string) => `${TRACK_KEY_PREFIX}${trackId}`;
+// 
 
-export const updateCache = async (trackId: string, trackDetails: TrackDetails) => {
+export const updateTrack = async (trackId: string, trackDetails: TrackDetails) => {
+    // handle the different fields 
     await redisClient.set(getTrackKey(trackId), JSON.stringify(trackDetails));
 };
 
-export const getCacheTrack = async (trackId: string): Promise<TrackDetails | null> => {
+export const getTrack = async (trackId: string): Promise<TrackDetails | null> => {
     const data = await redisClient.get(getTrackKey(trackId));
     return data ? JSON.parse(data) : null;
 };
@@ -47,7 +49,7 @@ export const getTrackHistory = async (userId: string, count = 50): Promise<Track
 // based on trackId get items with at least one tag in common
 // then rank by number of tags in common 
 export const getRelatedTracks = async (trackId: string, userId: string, count = 5) => {
-    const track = await getCacheTrack(trackId);
+    const track = await getTrack(trackId);
     if (!track || !track.analysis) return [];
     const history = await getTrackHistory(userId);
     const topTracks = findTracksWithCommonTags(track, history).slice(0, count);
@@ -58,6 +60,7 @@ const findTracksWithCommonTags = (track: TrackDetails, tracks: TrackDetails[]) =
     const targetTags = track?.analysis?.tags ?? [];
     const commonTracks = tracks.reduce<TrackDetails[]>((prev, curr) => {
         if (curr.trackId === track.trackId) return prev;
+        if (prev.some(t => t.trackId === curr.trackId)) return prev;
         if (curr.analysis?.tags?.length === 0) return prev;
         if (curr.analysis?.tags?.some(tag => targetTags.includes(tag))) {
             return [...prev, curr];

@@ -3,7 +3,7 @@ import type { TrackDetails } from '../../../src/types';
 import * as Paths from './paths';
 
 export const analyseTrack = async (trackId: string) => {
-  await axios.get(`${Paths.API}/analyse?trackId=${trackId}`);
+  await axios.post(`${Paths.API}/analyse?trackId=${trackId}`);
 }
 
 export const getCurrentTrack = async (): Promise<TrackDetails | null> => {
@@ -30,4 +30,9 @@ export const getRelatedTracks = async (trackId: string): Promise<TrackDetails[]>
   return result
 }
 
+export const getNowPlaying = async (): Promise<TrackDetails | null> => {
+  const response = await axios.get(`${Paths.API}/now-playing`);
+  const track = response.data as TrackDetails | null
+  return track
+}
 export const eventsURL = `${Paths.API}/events`;

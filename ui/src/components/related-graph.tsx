@@ -24,7 +24,7 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
     return (
         <div
             className={cn(
-                'border border flex p-2 rounded-md gap-2 bg-background hover:bg-accent',
+                'border flex p-2 rounded-md gap-2 bg-background hover:bg-accent',
                 data.selected && 'border-primary'
             )}
             style={{
@@ -38,7 +38,7 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
             <Handle
                 type="target"
                 position={Position.Left}
-                className="!opacity-0"
+                className="opacity-0!"
             />
             <div className="flex flex-col gap-2 flex-1 min-w-0">
                 <div className="flex gap-2">
@@ -57,7 +57,7 @@ const TrackNode = ({ data }: { data: TrackNodeData }) => {
             <Handle
                 type="source"
                 position={Position.Right}
-                className="!opacity-0"
+                className="opacity-0!"
             />
         </div>
     );

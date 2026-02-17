@@ -2,14 +2,14 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 
-import { SessionData, SpotifyTokenResponse, TrackDetails } from './types';
+import { SpotifyTokenResponse, TrackDetails } from './types';
 import * as Store from './store';
 import * as Spotify from './spotify';
 import * as Analysis from './analysis';
 import * as Events from "./events";
 import redisClient, { connectRedis } from './redis';
 import jwt from 'jsonwebtoken';
-import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH } from './consts';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, cookieName, JWT_SECRET, PORT, REDIRECT_URI, UI_PATH, defaultAnalysis } from './consts';
 import cookieParser from 'cookie-parser';
 import { AuthenticatedRequest, authenticateJWT } from './middleware';
 
@@ -102,20 +102,11 @@ app.get('/api/now-playing', authenticateJWT, async (req: AuthenticatedRequest, r
         return res.status(401).json({ error: 'Not logged in' });
     }
     try {
-        const track = await Spotify.getCurrentlyPlaying(user) 
+        const track = await Spotify.getCurrentlyPlaying(user)
         if (!track) return res.status(200).json(null)
-        const trackDetails: TrackDetails = {
-            ...Spotify.convertSpotifyTrackToTrackDetails(track),
-            loading: true,
+        let trackDetails: TrackDetails = {
+            ...Spotify.convertSpotifyTrackToTrackDetails(track)
         }
-        await Store.pushHistory(user.spotifyId, trackDetails.trackId);
-        let cached = await Store.getCacheTrack(trackDetails.trackId);
-        if (cached) {
-            res.status(200).json(cached);
-            return;
-        }
-        await Store.updateCache(trackDetails.trackId, trackDetails);
-        Analysis.generateContent(trackDetails);
         res.status(200).json(trackDetails);
     } catch (error: any) {
         console.error('Error during now playing', error);
@@ -141,29 +132,30 @@ app.get('/api/recently-played', authenticateJWT, async (req: AuthenticatedReques
     }
 })
 
-app.get('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/analyse', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) return res.status(401).json({ error: 'Not logged in' });
         const trackId = req.query.trackId as string;
-        let track = await Store.getCacheTrack(trackId);
+        let track = await Store.getTrack(trackId);
         if (!track) {
             const spotifyTrack = await Spotify.getTrack(trackId, user);
             track = Spotify.convertSpotifyTrackToTrackDetails(spotifyTrack);
             await Store.pushHistory(user.spotifyId, track.trackId);
         }
-        if (track.analysis || track.loading) {
+        if (Analysis.trackAnalysisFilled(track)) {
             res.status(200).json({ message: 'Analysis already completed' });
             return;
         }
         const updatedTrack = {
             ...track,
             loading: true,
-            error: undefined
+            error: undefined,
+            analysis: { ...defaultAnalysis, ...track.analysis },
         };
-        await Store.updateCache(track.trackId, updatedTrack);
+        await Store.updateTrack(track.trackId, updatedTrack);
         Events.analysis.emit(Events.analysisUpdate, updatedTrack);
-        Analysis.generateContent(updatedTrack);
+        Analysis.runAnalysis(updatedTrack);
         res.status(200).json({ message: 'Analysis triggered' });
     } catch (error: any) {
         console.error('Error during analyse', error?.message);
@@ -183,9 +175,14 @@ app.get('/api/events', authenticateJWT, (req: AuthenticatedRequest, res) => {
 app.get('/api/related-tracks', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
+        const limit = req.query.limit as string ?? 5;
         if (!user) return res.status(401).json({ error: 'Not logged in' });
         const trackId = req.query.trackId as string;
-        const relatedTracks = await Store.getRelatedTracks(trackId, user.spotifyId);
+        const relatedTracks = await Store.getRelatedTracks(
+            trackId,
+            user.spotifyId,
+            parseInt(limit)
+        );
         res.json(relatedTracks);
     } catch (error: any) {
         console.error('Error during related tracks', error?.message);

@@ -4,14 +4,12 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
       - '**'
 
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
-  SERVICE_NAME: liner-notes
+  SERVICE_NAME: ${{ github.ref == 'refs/heads/main' && 'liner-notes' || 'liner-notes-dev' }}
 
 jobs:
   deploy:
@@ -33,7 +31,7 @@ jobs:
         run: |
           echo "SPOTIFY_CLIENT_ID=${{ vars.SPOTIFY_CLIENT_ID }}" >> .env
           echo "SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}" >> .env
-          echo "REDIRECT_URI=${{ vars.REDIRECT_URI }}" >> .env
+          echo "DOMAIN=${{ github.ref == 'refs/heads/main' && vars.DOMAIN || vars.DEV_DOMAIN }}" >> .env
           echo "GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}" >> .env
           echo "REDIS_URL=${{ vars.REDIS_URL }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { TrackDetails } from "../../../src/types";
-import Insights from "./analysis";
+import { AnalysisCard } from "./analysis";
 import {
     SidebarProvider,
     Sidebar,
@@ -19,24 +19,21 @@ import PlatformLogin from "./platform-connect";
 import { NavUser } from "./nav-user";
 import { Button } from "./ui/button";
 import AnalyseRecent from "./analyse-recent";
-import { TrackItem, TrackCard } from "./track";
+import { TrackItem, TrackCard, TrackError } from "./track";
 import { ResizableOverlay } from "./resizable-overlay";
 import { RelatedGraph } from "./related-graph";
 import { useWindowSize } from "../hooks/use-window-size";
 import { ReactFlowProvider } from "@xyflow/react";
+import * as Api from "../lib/api";
 
 const SIDEBAR_WIDTH = 255;
 
 export default function Home({
     history,
-    isAnalyzing,
-    setAnalyzing,
     isLoggedIn,
     setHistory,
 }: {
     history: Array<TrackDetails>,
-    isAnalyzing: boolean,
-    setAnalyzing: (isAnalyzing: boolean) => void,
     isLoggedIn: boolean,
     setHistory: React.Dispatch<React.SetStateAction<Array<TrackDetails>>>,
 }) {
@@ -59,6 +56,26 @@ export default function Home({
         setSelectedItem(index);
     };
 
+    const handleAnalyseTrack = (track: TrackDetails) => {
+        try {
+            setHistory((prev) => {
+                if (prev.some((t) => t.trackId === track.trackId)) return prev
+                return [{ ...track, loading: true }, ...prev]
+            });
+            Api.analyseTrack(track.trackId)
+        } catch (error) {
+            console.error('Error analying track', error)
+        }
+    }
+
+    const analyseNowPlaying = async () => {
+        try {
+            const newTrack = await Api.getNowPlaying()
+            if (newTrack) handleAnalyseTrack(newTrack)
+        } catch (error) {
+            console.error('Error analying now playing track', error)
+        }
+    }
     return (
         <SidebarProvider defaultOpen={true}>
             <div className="flex h-screen w-screen bg-background">
@@ -71,10 +88,7 @@ export default function Home({
                         index={index}
                     />
                     <SidebarFooter className="bg-background">
-                        {isLoggedIn && <NavUser
-                            isAnalyzing={isAnalyzing}
-                            setAnalyzing={setAnalyzing}
-                        />}
+                        {isLoggedIn && <NavUser analyseNowPlaying={analyseNowPlaying} />}
                     </SidebarFooter>
                 </Sidebar>
 
@@ -87,7 +101,7 @@ export default function Home({
                             ? <PlatformLogin />
                             : <>
                                 <AnalyseRecent
-                                    setHistory={setHistory}
+                                    handleAnalyseTrack={handleAnalyseTrack}
                                     history={history}
                                 />
                                 <Button
@@ -105,16 +119,14 @@ export default function Home({
                         <div className="absolute inset-0 overflow-auto p-6 bg-background">
                             <div className="max-w-6xl mx-auto">
                                 <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                                    <div className="lg:sticky lg:top-0 lg:self-start">
+                                    <div className="lg:sticky lg:top-0 lg:self-start space-y-2">
                                         <TrackCard track={selectedTrack} />
+                                        <TrackError track={selectedTrack} />
                                     </div>
                                     <div className="min-h-screen">
-                                        <Insights
-                                            analysis={selectedTrack?.analysis}
-                                            loading={selectedTrack?.loading}
-                                            error={selectedTrack?.error}
-                                            trackId={selectedTrack?.trackId}
-                                        />
+                                        {selectedTrack && (
+                                            <AnalysisCard analysis={selectedTrack.analysis} />
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -1,10 +1,12 @@
 import type { TrackDetails } from "../../../src/types"
 import { cn } from "../lib/utils"
 import { Loader2 } from "lucide-react"
+import { Button } from "./ui/button"
+import * as Api from "../lib/api"
 
 export function TrackItem({ track, selected }: { track: TrackDetails, selected: boolean }) {
     return <>
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
             {track.image ? (
                 <img
                     src={track.image}
@@ -51,7 +53,7 @@ export function TrackItem({ track, selected }: { track: TrackDetails, selected: 
 
 export function TrackItemSkeleton() {
     return (
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 48 48"
@@ -112,6 +114,19 @@ export function TrackCard({ track }: { track?: TrackDetails }) {
     )
 }
 
+export function TrackError({ track }: { track?: TrackDetails }) {
+    if (!track || !track.error) return null;
+    return (
+        <div className='flex items-center justify-center text-muted-foreground border border-border p-4 rounded-xl'>
+            <div className='flex flex-col items-center gap-3'>
+                <p>{track.error}</p>
+                <Button onClick={() => Api.analyseTrack(track.trackId)}>
+                    Try Again
+                </Button>
+            </div>
+        </div>
+    )
+}
 
 export function OverflowTags({
     tags,

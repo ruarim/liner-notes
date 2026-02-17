@@ -9,9 +9,9 @@ export const REDIRECT_URI = `https://${DOMAIN}/callback`;
 export const JWT_SECRET = process.env.JWT_SECRET as string;
 export const UI_PATH = path.join(process.cwd(), 'dist', 'ui');
 
-export const cookieName = 'auth_token'
+export const COOKIE_NAME = 'auth_token'
 
-export const defaultAnalysis: AnalysisData = {
+export const DEFAULT_ANALYSIS: AnalysisData = {
     trackAnalysis: undefined,
     albumAnalysis: undefined,
     personnelAndPlaces: undefined,

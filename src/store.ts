@@ -6,10 +6,8 @@ const HISTORY_KEY_PREFIX = "history:";
 
 const getUserHistoryKey = (userId: string) => `${HISTORY_KEY_PREFIX}${userId}`;
 const getTrackKey = (trackId: string) => `${TRACK_KEY_PREFIX}${trackId}`;
-// 
 
 export const updateTrack = async (trackId: string, trackDetails: TrackDetails) => {
-    // handle the different fields 
     await redisClient.set(getTrackKey(trackId), JSON.stringify(trackDetails));
 };
 

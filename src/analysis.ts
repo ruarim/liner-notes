@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { AnalysisData, TrackDetails } from "./types";
 import * as Store from "./store";
 import * as Events from "./events";
-import { defaultAnalysis } from "./consts";
+import { DEFAULT_ANALYSIS } from "./consts";
 
 const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
 
@@ -106,8 +106,8 @@ const generateResearch = async (track: TrackDetails) => {
 
 export const trackAnalysisFilled = (track: TrackDetails) => {
     return Object
-        .entries(defaultAnalysis)
-        .every(([key]) => valueIsFilled(track.analysis?.[key as keyof typeof defaultAnalysis]));
+        .entries(DEFAULT_ANALYSIS)
+        .every(([key]) => valueIsFilled(track.analysis?.[key as keyof typeof DEFAULT_ANALYSIS]));
 };
 
 export const valueIsFilled = (value: any) => {

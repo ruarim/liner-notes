@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { cookieName } from './consts';
+import { COOKIE_NAME } from './consts';
 import { SessionData } from './types';
 
 export interface AuthenticatedRequest extends Request {
@@ -8,7 +8,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const token = req.cookies.auth_token; 
+    const token = req.cookies.auth_token;
     if (!token) return res.status(401).send('Unauthorized');
 
     try {
@@ -16,7 +16,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
         req.user = decoded;
         next();
     } catch (err) {
-        res.clearCookie(cookieName);
+        res.clearCookie(COOKIE_NAME);
         return res.status(403).send('Invalid Session');
     }
 };

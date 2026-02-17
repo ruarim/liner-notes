@@ -1,7 +1,31 @@
 import axios from "axios";
 import { SpotifyNowPlayingResponse, SpotifyTrack, TrackDetails, SessionData, SpotifyTokenResponse, SpotifyUser } from "./types";
-import { defaultAnalysis, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from "./consts";
+import { DEFAULT_ANALYSIS, REDIRECT_URI, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from "./consts";
 
+export const tokenUrl = 'https://accounts.spotify.com/api/token';
+
+export const authorizeUrl = 'https://accounts.spotify.com/authorize?';
+
+export const scopes = 'user-read-currently-playing user-read-playback-state user-read-recently-played';
+
+export const swapAuthCodeForToken = async (code: string): Promise<SpotifyTokenResponse> => {
+    const params = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code as string,
+        redirect_uri: REDIRECT_URI
+    });
+    const response = await axios.post<SpotifyTokenResponse>(
+        tokenUrl,
+        params,
+        {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Basic ${Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+            },
+        }
+    );
+    return response.data;
+}
 export const getRefreshedAccessToken = async (refreshToken: string): Promise<SpotifyTokenResponse> => {
     const params = new URLSearchParams({
         grant_type: 'refresh_token',
@@ -9,7 +33,7 @@ export const getRefreshedAccessToken = async (refreshToken: string): Promise<Spo
     });
 
     const response = await axios.post<SpotifyTokenResponse>(
-        'https://accounts.spotify.com/api/token',
+        tokenUrl,
         params,
         {
             headers: {
@@ -87,7 +111,7 @@ export const convertSpotifyTrackToTrackDetails = (track: SpotifyTrack): TrackDet
         image: track.album.images[0].url,
         releaseDate: track.album.release_date,
         loading: false,
-        analysis: defaultAnalysis,
+        analysis: DEFAULT_ANALYSIS,
     };
 }
 
@@ -100,9 +124,3 @@ export const getUser = async (session: Omit<SessionData, 'spotifyId'>): Promise<
         return response.data;
     });
 }
-
-export const tokenUrl = 'https://accounts.spotify.com/api/token';
-
-export const authorizeUrl = 'https://accounts.spotify.com/authorize?';
-
-export const scopes = 'user-read-currently-playing user-read-playback-state user-read-recently-played';

@@ -1,47 +1,62 @@
-import redisClient from "./redis";
+import { getDb } from "./mongodb";
 import { TrackDetails } from "./types";
 
-const TRACK_KEY_PREFIX = "track:";
-const HISTORY_KEY_PREFIX = "history:";
+interface HistoryDocument {
+    userId: string;
+    trackIds: string[];
+}
 
-const getUserHistoryKey = (userId: string) => `${HISTORY_KEY_PREFIX}${userId}`;
-const getTrackKey = (trackId: string) => `${TRACK_KEY_PREFIX}${trackId}`;
+const getTracks = () => getDb().collection<TrackDetails>("tracks");
+const getHistories = () => getDb().collection<HistoryDocument>("histories");
 
 export const updateTrack = async (trackId: string, trackDetails: TrackDetails) => {
-    await redisClient.set(getTrackKey(trackId), JSON.stringify(trackDetails));
+    const track = JSON.parse(JSON.stringify(trackDetails)) as TrackDetails;
+    await getTracks().replaceOne({ trackId }, track, { upsert: true });
 };
 
 export const getTrack = async (trackId: string): Promise<TrackDetails | null> => {
-    const data = await redisClient.get(getTrackKey(trackId));
-    return data ? JSON.parse(data) : null;
+    return getTracks().findOne({ trackId }, { projection: { _id: 0 } });
 };
 
 export const pushHistory = async (userId: string, trackId: string) => {
-    const key = getUserHistoryKey(userId);
-    const lastTrackId = await redisClient.lIndex(key, -1);
-    if (lastTrackId === trackId) return;
-    await redisClient.rPush(key, trackId);
+    const history = await getHistories().findOne(
+        { userId },
+        { projection: { _id: 0, trackIds: { $slice: -1 } } }
+    );
+    if (history?.trackIds[0] === trackId) return;
+    await getHistories().updateOne(
+        { userId },
+        { $push: { trackIds: trackId } },
+        { upsert: true }
+    );
 };
 
 export const hasTrackInHistory = async (userId: string, trackId: string): Promise<boolean> => {
-    const key = getUserHistoryKey(userId);
-    const trackIds = await redisClient.lRange(key, 0, -1);
-    return trackIds.includes(trackId);
+    const history = await getHistories().findOne(
+        { userId, trackIds: trackId },
+        { projection: { _id: 1 } }
+    );
+    return history !== null;
 };
 
 export const getTrackHistory = async (userId: string, count = 50): Promise<TrackDetails[]> => {
-    const key = getUserHistoryKey(userId);
+    const history = await getHistories().findOne(
+        { userId },
+        { projection: { _id: 0, trackIds: { $slice: -count } } }
+    );
 
-    const trackIds = await redisClient.lRange(key, -count, -1);
+    if (!history || history.trackIds.length === 0) return [];
 
-    if (trackIds.length === 0) return [];
+    const tracks = await getTracks()
+        .find({ trackId: { $in: history.trackIds } }, { projection: { _id: 0 } })
+        .toArray();
+    const tracksById = new Map<string, TrackDetails>(
+        tracks.map(track => [track.trackId, track])
+    );
 
-    const trackKeys = trackIds.map(id => getTrackKey(id));
-    const cachedTracks = await redisClient.mGet(trackKeys);
-
-    return cachedTracks
-        .filter((data): data is string => data !== null)
-        .map(data => JSON.parse(data));
+    return history.trackIds
+        .map(trackId => tracksById.get(trackId))
+        .filter((track): track is TrackDetails => track !== undefined);
 };
 
 // based on trackId get items with at least one tag in common

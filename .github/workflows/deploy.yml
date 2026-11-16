@@ -33,7 +33,7 @@ jobs:
           echo "SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}" >> .env
           echo "DOMAIN=${{ github.ref == 'refs/heads/main' && vars.DOMAIN || vars.DEV_DOMAIN }}" >> .env
           echo "GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}" >> .env
-          echo "REDIS_URL=${{ vars.REDIS_URL }}" >> .env
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "MODEL_NAME=${{ vars.MODEL_NAME }}" >> .env
 

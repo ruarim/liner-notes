@@ -22,7 +22,7 @@ A powerful web application that enhances your music listening experience by prov
 ### Backend
 - **Core**: Node.js, Express, TypeScript
 - **AI**: [Vercel AI SDK](https://sdk.vercel.ai/)
-- **Caching/Storage**: Redis
+- **Caching/Storage**: MongoDB
 - **Auth**: Spotify OAuth 2.0 & JWT sessions
 
 ### Frontend
@@ -35,7 +35,7 @@ A powerful web application that enhances your music listening experience by prov
 
 Before you begin, ensure you have the following:
 - Node.js (v18+)
-- Redis instance running Locally or via Cloud
+- MongoDB instance running Locally or via Cloud
 - [Spotify Developer](https://developer.spotify.com/) App (Client ID and Secret)
 - [Google AI Studio](https://aistudio.google.com/) API Key
 
@@ -63,7 +63,8 @@ Before you begin, ensure you have the following:
    SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
    DOMAIN={ngrok https tunnel domain}
    GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
-   REDIS_URL=redis://localhost:6379
+   MONGODB_URI=mongodb://localhost:27017
+   MONGODB_DB=liner-notes
    JWT_SECRET=your_random_jwt_secret
    ```
 

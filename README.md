@@ -75,6 +75,33 @@ Before you begin, ensure you have the following:
    ```
    The application will be available at `http://localhost:8080`.
 
+## 🐳 Docker
+
+The project includes a `Dockerfile` and `docker-compose.yml` with three services:
+
+- `app` — the Node.js server and built UI, available at `http://localhost:8080`.
+- `mongodb` — MongoDB, available at `mongodb://localhost:27017`.
+- `mongodb-express` — Mongo Express UI, available at `http://localhost:8081`.
+
+1. **Configure environment variables**:
+   Ensure your `.env` contains the variables from `.env.example`, including a `JWT_SECRET`. Optionally set `MONGO_ROOT_USERNAME`, `MONGO_ROOT_PASSWORD`, `ME_CONFIG_BASICAUTH_USERNAME`, and `ME_CONFIG_BASICAUTH_PASSWORD` to override the local development defaults.
+
+2. **Start the stack**:
+   ```bash
+   docker compose up --build
+   ```
+
+   The app is served at `http://localhost:8080` and Mongo Express at `http://localhost:8081`.
+
+3. **Stop the stack**:
+   ```bash
+   docker compose down
+   ```
+
+   Add `-v` to also remove the MongoDB data volume.
+
+> **Note:** Spotify OAuth still requires an HTTPS redirect, so `DOMAIN` must be an HTTPS tunnel domain (e.g. ngrok) even when running locally via Docker.
+
 ## 🚢 Deployment
 
 The project includes a `deploy.sh` script for deploying to Google Cloud Platform (GCP). It handles building the UI, the backend, and pushing the final bundle.

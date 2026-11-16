@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+dist
+ui/dist
+.git
+.github
+.env
+*.md
+key.json
+todo.txt
+deploy.sh
+generate-credentials.sh
+Dockerfile
+docker-compose.yml
+.dockerignore

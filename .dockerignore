@@ -13,3 +13,4 @@ generate-credentials.sh
 Dockerfile
 docker-compose.yml
 .dockerignore
+liner-notes-deploy.tar.gz

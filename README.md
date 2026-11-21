@@ -102,6 +102,17 @@ The project includes a `Dockerfile` and `docker-compose.yml` with three services
 
 > **Note:** Spotify OAuth still requires an HTTPS redirect, so `DOMAIN` must be an HTTPS tunnel domain (e.g. ngrok) even when running locally via Docker.
 
+### Package and deploy the app
+
+Run `./package.sh` to build the `liner-notes:latest` image and create a `dist/liner-notes.tar.gz` bundle for deployment to another machine.
+
+**Options:**
+- `-p platform` — Docker platform (default: `linux/amd64`)
+- `-t tag` — Image tag (default: `latest`)
+- `-o outdir` — Output directory (default: `dist`)
+
+The `run.sh` script loads the Docker image and starts the stack with docker-compose.
+
 ## 🚢 Deployment
 
 The project includes a `deploy.sh` script for deploying to Google Cloud Platform (GCP). It handles building the UI, the backend, and pushing the final bundle.

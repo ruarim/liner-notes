@@ -6,7 +6,7 @@ import * as Store from "./store";
 import * as Events from "./events";
 import { DEFAULT_ANALYSIS } from "./consts";
 
-const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
+const MODEL_NAME = process.env.MODEL_NAME || "models/gemini-3.6-flash";
 
 const maxWord = 'Max 100 Words';
 const ANALYSIS_SHAPE = {

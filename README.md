@@ -22,7 +22,7 @@ A powerful web application that enhances your music listening experience by prov
 ### Backend
 - **Core**: Node.js, Express, TypeScript
 - **AI**: [Vercel AI SDK](https://sdk.vercel.ai/)
-- **Caching/Storage**: Redis
+- **Caching/Storage**: MongoDB
 - **Auth**: Spotify OAuth 2.0 & JWT sessions
 
 ### Frontend
@@ -35,7 +35,7 @@ A powerful web application that enhances your music listening experience by prov
 
 Before you begin, ensure you have the following:
 - Node.js (v18+)
-- Redis instance running Locally or via Cloud
+- MongoDB instance running Locally or via Cloud
 - [Spotify Developer](https://developer.spotify.com/) App (Client ID and Secret)
 - [Google AI Studio](https://aistudio.google.com/) API Key
 
@@ -63,7 +63,8 @@ Before you begin, ensure you have the following:
    SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
    DOMAIN={ngrok https tunnel domain}
    GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
-   REDIS_URL=redis://localhost:6379
+   MONGODB_URI=mongodb://localhost:27017
+   MONGODB_DB=liner-notes
    JWT_SECRET=your_random_jwt_secret
    ```
 
@@ -73,6 +74,44 @@ Before you begin, ensure you have the following:
    npm run dev
    ```
    The application will be available at `http://localhost:8080`.
+
+## 🐳 Docker
+
+The project includes a `Dockerfile` and `docker-compose.yml` with three services:
+
+- `app` — the Node.js server and built UI, available at `http://localhost:8080`.
+- `mongodb` — MongoDB, available at `mongodb://localhost:27017`.
+- `mongodb-express` — Mongo Express UI, available at `http://localhost:8081`.
+
+1. **Configure environment variables**:
+   Ensure your `.env` contains the variables from `.env.example`, including a `JWT_SECRET`. Optionally set `MONGO_ROOT_USERNAME`, `MONGO_ROOT_PASSWORD`, `ME_CONFIG_BASICAUTH_USERNAME`, and `ME_CONFIG_BASICAUTH_PASSWORD` to override the local development defaults.
+
+2. **Start the stack**:
+   ```bash
+   docker compose up --build
+   ```
+
+   The app is served at `http://localhost:8080` and Mongo Express at `http://localhost:8081`.
+
+3. **Stop the stack**:
+   ```bash
+   docker compose down
+   ```
+
+   Add `-v` to also remove the MongoDB data volume.
+
+> **Note:** Spotify OAuth still requires an HTTPS redirect, so `DOMAIN` must be an HTTPS tunnel domain (e.g. ngrok) even when running locally via Docker.
+
+### Package and deploy the app
+
+Run `./package.sh` to build the `liner-notes:latest` image and create a `dist/liner-notes.tar.gz` bundle for deployment to another machine.
+
+**Options:**
+- `-p platform` — Docker platform (default: `linux/amd64`)
+- `-t tag` — Image tag (default: `latest`)
+- `-o outdir` — Output directory (default: `dist`)
+
+The `run.sh` script loads the Docker image and starts the stack with docker-compose.
 
 ## 🚢 Deployment
 

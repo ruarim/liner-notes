@@ -10,6 +10,7 @@ export const setupAnalysisSSE = (req: Request, res: Response, userId: string) =>
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
 
     const listener = async (data: TrackDetails) => {
@@ -21,8 +22,7 @@ export const setupAnalysisSSE = (req: Request, res: Response, userId: string) =>
 
     analysis.on(analysisUpdate, listener);
 
-    req.on('close', () => {
+    res.on('close', () => {
         analysis.off(analysisUpdate, listener);
-        res.end();
     });
 }   

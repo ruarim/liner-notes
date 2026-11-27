@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 
-import redisClient, { connectRedis } from './redis';
+import { closeMongo, connectMongo } from './mongodb';
 import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, JWT_SECRET, PORT, UI_PATH } from './consts';
 import cookieParser from 'cookie-parser';
 import { authenticateJWT } from './middleware';
@@ -31,13 +31,13 @@ app.get('/api/events', authenticateJWT, Controller.sse);
 app.get('/api/related-tracks', authenticateJWT, Controller.relatedTracks)
 
 const startServer = async () => {
-    await connectRedis();
+    await connectMongo();
     app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }
 
 startServer();
 
 process.on('SIGINT', async () => {
-    await redisClient.quit();
+    await closeMongo();
     process.exit(0);
 });

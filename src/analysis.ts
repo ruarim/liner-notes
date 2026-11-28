@@ -3,7 +3,6 @@ import { generateText, Output, stepCountIs } from "ai";
 import { z } from 'zod';
 import { AnalysisData, TrackDetails } from "./types";
 import * as Store from "./store";
-import * as Events from "./events";
 import { DEFAULT_ANALYSIS } from "./consts";
 
 const MODEL_NAME = process.env.MODEL_NAME || "models/gemini-3.6-flash";
@@ -50,7 +49,6 @@ export async function runAnalysis(track: TrackDetails) {
             analysis: { ...analysis }
         }
         Store.updateTrack(track.trackId, updatedTrack)
-        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
         console.info(`Finished research for ${track.name} - ${track.album} - ${track.artist}`)
     } catch (error) {
         console.error(`Analysis error for ${track.trackId}:`, error);
@@ -60,7 +58,6 @@ export async function runAnalysis(track: TrackDetails) {
             error: 'Error retrieving research'
         }
         Store.updateTrack(track.trackId, updatedTrack)
-        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
     }
 }
 

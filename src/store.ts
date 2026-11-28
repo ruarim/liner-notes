@@ -31,14 +31,6 @@ export const pushHistory = async (userId: string, trackId: string) => {
     );
 };
 
-export const hasTrackInHistory = async (userId: string, trackId: string): Promise<boolean> => {
-    const history = await getHistories().findOne(
-        { userId, trackIds: trackId },
-        { projection: { _id: 1 } }
-    );
-    return history !== null;
-};
-
 export const getTrackHistory = async (userId: string, count = 50): Promise<TrackDetails[]> => {
     const history = await getHistories().findOne(
         { userId },

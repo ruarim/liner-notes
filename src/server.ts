@@ -27,7 +27,6 @@ app.get('/api/history', authenticateJWT, Controller.history);
 app.get('/api/now-playing', authenticateJWT, Controller.nowPlaying)
 app.get('/api/recently-played', authenticateJWT, Controller.recentlyPlayed)
 app.post('/api/analyse', authenticateJWT, Controller.analyse);
-app.get('/api/events', authenticateJWT, Controller.sse);
 app.get('/api/related-tracks', authenticateJWT, Controller.relatedTracks)
 
 const startServer = async () => {

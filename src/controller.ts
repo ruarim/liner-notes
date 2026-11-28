@@ -9,7 +9,6 @@ import { AuthenticatedRequest } from './middleware';
 import * as Spotify from './spotify';
 import * as Store from './store';
 import * as Analysis from './analysis';
-import * as Events from "./events";
 
 export const auth = (_: Request, res: Response) => {
     const params = new URLSearchParams({
@@ -126,22 +125,12 @@ export const analyse = async (req: AuthenticatedRequest, res: Response) => {
             analysis: { ...DEFAULT_ANALYSIS, ...track.analysis },
         };
         await Store.updateTrack(track.trackId, updatedTrack);
-        Events.analysis.emit(Events.analysisUpdate, updatedTrack);
         Analysis.runAnalysis(updatedTrack);
         res.status(200).json({ message: 'Analysis triggered' });
     } catch (error: any) {
         console.error('Error during analyse', error?.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
-
-export const sse = (req: AuthenticatedRequest, res: Response) => {
-    const spotifyId = req.user?.spotifyId;
-    if (!spotifyId) {
-        res.status(500).json({ error: 'spotifyId not found in cookies' })
-        return
-    }
-    Events.setupAnalysisSSE(req, res, spotifyId);
 }
 
 export const relatedTracks = async (req: AuthenticatedRequest, res: Response) => {

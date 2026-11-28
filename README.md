@@ -15,7 +15,7 @@ A powerful web application that enhances your music listening experience by prov
 - **Curated Recommendations**: Get actionable suggestions for related albums, tracks, books, films, and TV shows.
 - **Track History**: Keeps a record of previously analysed songs for easy reference.
 - **Graph View**: Graph representation of realted tracks via intersection of tags.
-- **Real-time Updates**: Uses Server-Sent Events (SSE) to stream analysis results as they are generated.
+- **Live Updates**: Polls the history endpoint every 5 seconds to pick up analysis results as they are generated.
 
 ## 🛠 Tech Stack
 

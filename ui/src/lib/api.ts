@@ -35,4 +35,3 @@ export const getNowPlaying = async (): Promise<TrackDetails | null> => {
   const track = response.data as TrackDetails | null
   return track
 }
-export const eventsURL = `${Paths.API}/events`;
